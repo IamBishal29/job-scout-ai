@@ -1,0 +1,19 @@
+# JobPilot settings (safe to commit). Secrets go in .env, never here.
+
+[search]
+# A job matches if its title contains any of these (case-insensitive).
+role_keywords = [
+    ".net", "c#", "asp.net",
+    "ai engineer", "llm", "machine learning", "ai automation", "automation engineer",
+    "backend", "full stack", "full-stack",
+    "solutions architect", "software architect",
+    "project manager", "team lead", "tech lead", "engineering manager",
+]
+# A job matches if its location contains any of these (case-insensitive).
+locations = ["remote", "worldwide", "anywhere", "bangladesh", "dhaka"]
+
+[sources]
+enabled = ["remotive", "remoteok", "arbeitnow", "weworkremotely"]
+
+[database]
+path = "data/jobpilot.db"
