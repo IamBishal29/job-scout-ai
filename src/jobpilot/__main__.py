@@ -1,4 +1,4 @@
-"""Command line: `python -m jobpilot fetch | score | digest | llm-check`."""
+"""Command line: `python -m jobpilot fetch | score | digest | daily | llm-check`."""
 
 import argparse
 import logging
@@ -25,6 +25,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     score_cmd.add_argument("--limit", type=int, default=20, help="max jobs per run (default 20)")
     digest_cmd = commands.add_parser("digest", help="email your best new matches (Gmail)")
     digest_cmd.add_argument("--dry-run", action="store_true", help="print it, send nothing")
+    daily_cmd = commands.add_parser("daily", help="fetch, then score, then digest (for schedulers)")
+    daily_cmd.add_argument("--limit", type=int, default=20, help="max jobs to score (default 20)")
+    daily_cmd.add_argument("--dry-run", action="store_true", help="digest prints instead of sends")
     args = parser.parse_args(argv)
 
     if args.command is None:
@@ -45,7 +48,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         return score(config, args.limit)
     if args.command == "digest":
         return digest(config, args.dry_run)
+    if args.command == "daily":
+        return daily(config, args.limit, args.dry_run)
+    return fetch(config)
 
+
+def fetch(config: Config) -> int:
     conn = connect(config.db_path)
     try:
         init_db(conn)
@@ -55,6 +63,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         conn.close()
     print(format_results(results))
     return 1 if all(r.error for r in results) else 0
+
+
+def daily(config: Config, score_limit: int, dry_run: bool) -> int:
+    """The scheduled job. Every step runs even if an earlier one failed (e.g. no API key
+    yet must not stop fetching); the exit code says whether anything went wrong."""
+    steps = {
+        "fetch": lambda: fetch(config),
+        "score": lambda: score(config, score_limit),
+        "digest": lambda: digest(config, dry_run),
+    }
+    failed = []
+    for name, step in steps.items():
+        print(f"== {name} ({utc_now():%Y-%m-%d %H:%M} UTC)", flush=True)
+        try:
+            code = step()
+        except Exception:  # a batch runner must survive one step crashing
+            logging.getLogger(__name__).exception("Step %s crashed", name)
+            code = 1
+        if code:
+            failed.append(name)
+    print(f"== done: {'failed: ' + ', '.join(failed) if failed else 'all steps OK'}")
+    return 1 if failed else 0
 
 
 def llm_check(config: Config) -> int:
