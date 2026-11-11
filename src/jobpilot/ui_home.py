@@ -6,7 +6,7 @@ import streamlit as st
 
 from jobpilot import actions, db
 from jobpilot.config import Config
-from jobpilot.ui_common import open_db
+from jobpilot.ui_common import open_db, status_icon
 from jobpilot.ui_run import render_run
 from jobpilot.views import STRONG_MATCH, greeting, summarize, top_matches
 
@@ -67,10 +67,5 @@ def _setup_checklist(ready: actions.Readiness) -> None:
         st.markdown("**Finish setting up**")
         cols = st.columns(len(steps) + 1)
         for col, (name, done) in zip(cols, steps, strict=False):
-            icon = (
-                ":green[:material/check_circle:]"
-                if done
-                else ":gray[:material/radio_button_unchecked:]"
-            )
-            col.markdown(f"{icon} {name}")
+            col.markdown(f"{status_icon(done)} {name}")  # same ✓ / ⚠ as the Settings page
         cols[-1].page_link(SETTINGS, label="Open Settings", icon=":material/settings:")

@@ -31,7 +31,25 @@ def open_db(config: Config) -> Iterator[sqlite3.Connection]:
         conn.close()
 
 
+ICONS = {  # one icon per message kind, used on every page
+    "success": ":material/check_circle:",
+    "info": ":material/info:",
+    "warning": ":material/warning:",
+    "error": ":material/error:",
+}
+
+
+def status_icon(ok: bool) -> str:
+    """Coloured ✓ / ⚠ marker for markdown: set up vs. still missing."""
+    return ":green[:material/check_circle:]" if ok else ":orange[:material/error:]"
+
+
+def notify(kind: str, text: str) -> None:
+    """st.success / info / warning / error with the matching icon."""
+    getattr(st, kind)(text, icon=ICONS[kind])
+
+
 def show_flash() -> None:
     """Show the message a previous run stored before calling st.rerun()."""
     if flash := st.session_state.pop("flash", None):
-        st.success(flash)
+        notify("success", flash)

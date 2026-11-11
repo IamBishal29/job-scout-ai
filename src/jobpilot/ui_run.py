@@ -4,6 +4,7 @@ import streamlit as st
 
 from jobpilot import actions
 from jobpilot.config import Config
+from jobpilot.ui_common import notify
 
 SECONDS_PER_JOB = 6  # free-tier pacing (10 requests/minute), see [llm] requests_per_minute
 
@@ -11,8 +12,7 @@ SECONDS_PER_JOB = 6  # free-tier pacing (10 requests/minute), see [llm] requests
 def render_run(config: Config) -> None:
     ready = actions.readiness(config)
     if result := st.session_state.pop("run_result", None):  # outcome of the last click
-        kind, text = result
-        getattr(st, kind)(text)
+        notify(*result)  # (kind, text) with the matching icon
 
     fetch_col, score_col, digest_col = st.columns(3)
     with fetch_col.container(border=True):
