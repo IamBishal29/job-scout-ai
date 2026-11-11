@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M3 AI Matching (M1, M2 done)
-- Issue: #12 CV match scorer (PR open)
-- Branch: feat/12-cv-match-scorer
-- Next step: Syed merges #12 PR; adds .env key + cv.md, runs `python -m jobpilot llm-check` then `python -m jobpilot score`; then /next-task (#13 Scores in dashboard)
+- Issue: #13 Scores in dashboard (PR open)
+- Branch: feat/13-scores-in-dashboard
+- Next step: Syed merges #13 PR; adds .env key + cv.md, runs `llm-check` then `score`; then /next-task (#14 Cover letter draft)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -20,7 +20,8 @@
 - #9 detail panel: selectable table, selected job id in st.session_state, md_escape for descriptions - merged
 - #10 tracker: applications table, PRAGMA user_version migrations, status state machine, Tracker tab (ADR 0002) - merged
 - #11 llm.py: LlmClient Protocol, GeminiClient (httpx REST, key in header, 429/5xx backoff), FakeLlmClient, llm-check CLI - merged
-- #12 matcher.py + scores table (migration v3) + `score --limit` CLI; prompt includes based_in (Dhaka); real DB at v3, 114 unscored
+- #12 matcher.py + scores table (migration v3) + `score --limit` CLI; prompt includes based_in (Dhaka); real DB at v3, 114 unscored - merged
+- #13 dashboard: Score progress column + Why, best-first sort (unscored last), min-score slider, Match metric in detail
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -46,3 +47,4 @@
 - 2026-11-11: #10 implemented, PR opened; real DB migrated v0 -> v2, 114 jobs kept
 - 2026-11-11: #11 implemented, PR opened; live Gemini call pending Syed's key
 - 2026-11-11: #12 implemented, PR opened; live scoring pending key + cv.md
+- 2026-11-11: #13 implemented, PR opened
