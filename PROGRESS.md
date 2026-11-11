@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M5 More Sources (MVP M1-M4 done)
-- Issue: #18 LinkedIn/Indeed alert email parser (PR open)
-- Branch: feat/18-alert-email-parser
-- Next step: Syed merges #18 PR; optionally verifies parser on a real alert (.eml in samples/); then /next-task (#19 Bdjobs polite scraper)
+- Issue: #19 Bdjobs - closed as won't-do (ADR 0003, docs PR open)
+- Branch: docs/19-bdjobs-wont-do
+- Next step: Syed merges the ADR 0003 docs PR. Backlog #1-#19 then complete. Next: real-world setup (.env, cv.md, Gmail label, register-task) and plan new issues
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -26,7 +26,8 @@
 - #15 digest.py (HTML + text, escaped), digested_jobs log (migration v5), [digest] top_n/min_score; real DB at v5 - merged
 - #16 mailer.py (STARTTLS, app password, multipart) + `digest [--dry-run]` CLI; build -> send -> mark - merged
 - #17 `python -m jobpilot daily` (fetch->score->digest, keeps going, exit code), scripts/daily.ps1 + register-task.ps1, README scheduling - merged (MVP complete)
-- #18 alerts.py: read-only IMAP (BODY.PEEK), link-based LinkedIn/Indeed parsers (synthetic fixtures, Syed's choice), TRUSTED_LOCATION, [alerts] config; source disabled by default
+- #18 alerts.py: read-only IMAP (BODY.PEEK), link-based LinkedIn/Indeed parsers (synthetic fixtures, Syed's choice), TRUSTED_LOCATION, [alerts] config; source disabled by default - merged
+- #19 Bdjobs: robots.txt disallows unlisted bots (2nd `User-agent: *` group = Disallow: /) -> won't-do, ADR 0003
 
 ## Decisions waiting for Syed
 - #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
@@ -61,3 +62,4 @@
 - 2026-11-11: #17 implemented, PR opened; PowerShell run of daily.ps1 left to Syed
 - 2026-11-11: #18 started; IMAP part pushed, parsers wait for Syed's sample .eml files
 - 2026-11-11: #18 finished with synthetic samples at Syed's request, PR opened
+- 2026-11-11: #19 investigated; Bdjobs robots.txt disallows bots; closed as won't-do (Syed's decision), ADR 0003
