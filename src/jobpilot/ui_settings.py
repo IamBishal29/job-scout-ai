@@ -1,4 +1,4 @@
-"""Settings tab: enter secrets in the UI instead of editing .env by hand."""
+"""Settings page: enter your key, CV and Gmail in the UI instead of editing files."""
 
 import os
 
@@ -7,6 +7,7 @@ import streamlit as st
 from jobpilot import cv_import, llm, mailer
 from jobpilot.config import Config, ConfigError, get_secret
 from jobpilot.env_store import env_path, load_env, save_secrets, secret_status
+from jobpilot.ui_common import notify, status_icon
 
 APP_PASSWORD_HELP = """\
 1. Turn on **2-Step Verification** for your Google account.
@@ -22,17 +23,15 @@ def render_settings(config: Config) -> None:
         "The dashboard is reachable only from this computer (localhost)."
     )
     if note := st.session_state.pop("settings_flash", None):  # message from the save rerun
-        st.success(note)
-    _gemini_section(config)
-    st.divider()
-    _cv_section(config)
-    st.divider()
-    _gmail_section()
+        notify("success", note)
+    for section in (lambda: _gemini_section(config), lambda: _cv_section(config), _gmail_section):
+        with st.container(border=True):  # one box per setting, each with a ✓ / ⚠ heading
+            section()
 
 
 def _cv_section(config: Config) -> None:
-    st.subheader("Your CV")
     info = cv_import.cv_info(config.cv_path)
+    st.subheader(f"{status_icon(info.exists)} Your CV")
     if info.exists:
         st.write(f"Status: **saved** ({info.words} words, updated {info.updated_at:%d %b %Y})")
     else:
@@ -71,8 +70,8 @@ def _saved(message: str) -> None:
 
 
 def _gemini_section(config: Config) -> None:
-    st.subheader("Gemini API key")
     status = secret_status("GEMINI_API_KEY")
+    st.subheader(f"{status_icon(status is not None)} Gemini API key")
     st.write(f"Status: **{status}**" if status else "Status: **not set**")
     st.caption("Free key, no card: https://aistudio.google.com → Get API key.")
 
@@ -96,7 +95,8 @@ def _gemini_section(config: Config) -> None:
 
 
 def _gmail_section() -> None:
-    st.subheader("Gmail for the daily digest")
+    ready = all(os.environ.get(n) for n in ("SMTP_USER", "SMTP_APP_PASSWORD", "DIGEST_TO"))
+    st.subheader(f"{status_icon(ready)} Gmail for the daily digest")
     pw_status = secret_status("SMTP_APP_PASSWORD")
     st.write(f"App password: **{pw_status}**" if pw_status else "App password: **not set**")
     with st.expander("How do I get a Gmail app password?"):
@@ -125,7 +125,6 @@ def _gmail_section() -> None:
                 save_secrets(values)
                 _saved("Gmail settings saved. Use 'Send test email' to check them.")
 
-    ready = all(os.environ.get(n) for n in ("SMTP_USER", "SMTP_APP_PASSWORD", "DIGEST_TO"))
     if st.button("Send test email", disabled=not ready):
         with st.spinner("Sending..."):
             try:

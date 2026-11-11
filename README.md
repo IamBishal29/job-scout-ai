@@ -35,7 +35,7 @@ Gmail.
 | **Filters and removes duplicates** | Keeps jobs matching your roles and locations, drops region-locked roles ("US only"), and stores the same job from two sites only once. |
 | **AI match score** | Gemini rates every job 0–100 against your CV, with a one-line reason. It knows where you're based, so jobs you can't take score low. |
 | **Dashboard** | Best matches first, filters (source, keyword, location, minimum score), full job details, a link to apply. |
-| **Application tracker** | Status per job (Saved → Applied → Interview → Offer / Rejected), notes and dates, on the Tracker page. |
+| **Application tracker** | Status per job (Saved → Applied → Interview → Offer / Rejected), notes and dates, on a **Tracker board** with one column per stage. |
 | **Cover letter drafts** | One click writes a draft from your CV only, flags `[placeholders]` to fill and any numbers not in your CV. You edit and send it. |
 | **Daily email digest** | Your top new matches by email. Never the same job twice. |
 | **Runs every morning** | Windows Task Scheduler runs fetch → score → email for you. |
@@ -130,7 +130,7 @@ Use the **menu on the left**: **Home**, **Jobs**, **Tracker** and **Settings**. 
 3. **Jobs** → set **Min match score** to around 60 → review the top matches.
 4. Interesting? Set the status to **Saved**, draft a cover letter, open the posting and apply, then set
    **Applied**.
-5. **Tracker** shows where every application stands.
+5. **Tracker** is a board: Saved → Applied → Interview → Offer (Rejected folded away).
 
 ---
 

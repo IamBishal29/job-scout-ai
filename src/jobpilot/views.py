@@ -1,7 +1,8 @@
-"""UI-independent view logic: filtering and table rows. No Streamlit imports here."""
+"""UI-independent view logic: filtering, ranking, badges, paging and summaries. No Streamlit."""
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+from datetime import datetime
 
 from jobpilot.models import Job, Score, Status
 
@@ -122,3 +123,28 @@ def paginate(items: list, page: int, per_page: int = 20) -> tuple[list, int, int
     page = min(max(page, 1), pages)
     start = (page - 1) * per_page
     return items[start : start + per_page], pages, page
+
+
+BOARD = (Status.SAVED, Status.APPLIED, Status.INTERVIEW, Status.OFFER)
+
+
+def board_columns(tracked: Iterable[tuple]) -> dict[Status, list[tuple]]:
+    """Group (Application, Job) pairs by status for the Tracker board, newest update first.
+
+    Contains BOARD's columns plus REJECTED (shown collapsed); NEW items are not on the board.
+    """
+    columns: dict[Status, list[tuple]] = {s: [] for s in (*BOARD, Status.REJECTED)}
+    for app, job in tracked:
+        if app.status in columns:
+            columns[app.status].append((app, job))
+    for items in columns.values():
+        items.sort(key=lambda pair: pair[0].updated_at, reverse=True)
+    return columns
+
+
+def ago(when: datetime, now: datetime) -> str:
+    """'today', 'yesterday', '3 days ago' (dates, not hours: good enough for job hunting)."""
+    days = (now.date() - when.date()).days
+    if days <= 0:
+        return "today"
+    return "yesterday" if days == 1 else f"{days} days ago"
