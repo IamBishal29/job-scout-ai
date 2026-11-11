@@ -12,10 +12,19 @@ from jobpilot.db import insert_jobs
 from jobpilot.models import Job
 from jobpilot.sources import arbeitnow, remoteok, remotive, weworkremotely
 from jobpilot.sources.base import JobSource
+from jobpilot.sources.greenhouse import GreenhouseSource
+from jobpilot.sources.lever import LeverSource
 
-SOURCES: dict[str, JobSource] = {
-    m.SOURCE: m for m in (remotive, remoteok, arbeitnow, weworkremotely)
-}
+
+def build_sources(config: Config) -> dict[str, JobSource]:
+    """All available sources: fixed feeds (modules) + company boards built from config."""
+    fixed: list[JobSource] = [remotive, remoteok, arbeitnow, weworkremotely]
+    boards: list[JobSource] = [
+        GreenhouseSource(config.boards.get("greenhouse", ())),
+        LeverSource(config.boards.get("lever", ())),
+    ]
+    return {s.SOURCE: s for s in fixed + boards}
+
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +52,10 @@ def run_fetch(
     conn: sqlite3.Connection,
     config: Config,
     client: httpx.Client,
-    sources: Mapping[str, JobSource] = SOURCES,
+    sources: Mapping[str, JobSource] | None = None,
 ) -> list[SourceResult]:
     """Run every enabled source. One failing source never stops the others."""
+    sources = build_sources(config) if sources is None else sources
     results = []
     for name in config.sources:
         try:
