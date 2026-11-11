@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M2 Dashboard & Tracker (M1 done)
-- Issue: #8 Streamlit job list (PR open)
-- Branch: feat/8-streamlit-job-list
-- Next step: Syed reviews/merges #8 PR, then /next-task (#9 Job detail view)
+- Issue: #9 Job detail view (PR open)
+- Branch: feat/9-job-detail-view
+- Next step: Syed reviews/merges #9 PR, then /next-task (#10 Application tracker)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -16,7 +16,8 @@
 - #5 WWR RSS fetcher: 4 category feeds, ~174 unique jobs (106 worldwide, 50 USA-only) - merged
 - #6 pipeline + `python -m jobpilot fetch`: dedupe_key UNIQUE index, exclude_locations; live: 586 fetched, 29 matched, 27 stored, rerun 0 new - merged
 - #7 GreenhouseSource/LeverSource + [boards] in config.toml + build_sources(); live: greenhouse 715 fetched, 87 new - merged (M1 complete)
-- #8 Streamlit dashboard: app.py + views.py (filter_jobs/to_rows), AppTest smoke tests, telemetry off
+- #8 Streamlit dashboard: app.py + views.py (filter_jobs/to_rows), AppTest smoke tests, telemetry off - merged
+- #9 detail panel: selectable table, selected job id in st.session_state, md_escape for descriptions
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -37,3 +38,4 @@
 - 2026-11-11: #6 implemented, PR opened
 - 2026-11-11: #7 implemented, PR opened (M1 complete once merged)
 - 2026-11-11: #8 implemented, PR opened
+- 2026-11-11: #9 implemented, PR opened; stopped adding Co-Authored-By to commits (Syed's request)
