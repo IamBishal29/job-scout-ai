@@ -92,6 +92,11 @@ class FakeLlmClient:
         return self._replies[min(len(self.prompts), len(self._replies)) - 1]
 
 
+def check_connection(config: Config) -> str:
+    """One tiny real call: proves key + model work. Shared by `llm-check` and the UI."""
+    return make_llm_client(config).generate("Reply with exactly: JobPilot OK")
+
+
 def make_llm_client(config: Config) -> LlmClient:
     """The real client for the app: Gemini with the key from .env / environment."""
     return GeminiClient(get_secret("GEMINI_API_KEY"), config.llm_model)
