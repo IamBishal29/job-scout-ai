@@ -84,12 +84,19 @@ def score_jobs(
     limit: int,
     model: str,
     sleep: Callable[[float], None] = time.sleep,
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> ScoreRun:
-    """Score up to `limit` unscored jobs. Failures stay unscored and are retried next run."""
+    """Score up to `limit` unscored jobs. Failures stay unscored and are retried next run.
+
+    on_progress(done, total) is called before each job, e.g. to drive a UI progress bar.
+    """
     pause = 60.0 / max(config.llm_requests_per_minute, 1)
     version = cv_hash(cv_text)
     scored = failed = 0
-    for i, job in enumerate(db.unscored_jobs(conn, limit)):
+    jobs = db.unscored_jobs(conn, limit)
+    for i, job in enumerate(jobs):
+        if on_progress:
+            on_progress(i, len(jobs))
         if i:
             sleep(pause)  # pace requests to respect the free tier per-minute quota
         try:
