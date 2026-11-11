@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M1 Fetch & Store (last issue in review) -> next M2 Dashboard & Tracker
-- Issue: #7 Greenhouse/Lever company boards (PR open)
-- Branch: feat/7-greenhouse-lever
-- Next step: Syed reviews/merges #7 PR, then /next-task (#8 Streamlit job list, milestone M2)
+- Milestone: M2 Dashboard & Tracker (M1 done)
+- Issue: #8 Streamlit job list (PR open)
+- Branch: feat/8-streamlit-job-list
+- Next step: Syed reviews/merges #8 PR, then /next-task (#9 Job detail view)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -15,7 +15,8 @@
 - #4 JobSource Protocol + RemoteOK (~99 jobs) + Arbeitnow (300 jobs, mostly German on-site) - merged
 - #5 WWR RSS fetcher: 4 category feeds, ~174 unique jobs (106 worldwide, 50 USA-only) - merged
 - #6 pipeline + `python -m jobpilot fetch`: dedupe_key UNIQUE index, exclude_locations; live: 586 fetched, 29 matched, 27 stored, rerun 0 new - merged
-- #7 GreenhouseSource/LeverSource + [boards] in config.toml + build_sources(); live: greenhouse 715 fetched, 87 new
+- #7 GreenhouseSource/LeverSource + [boards] in config.toml + build_sources(); live: greenhouse 715 fetched, 87 new - merged (M1 complete)
+- #8 Streamlit dashboard: app.py + views.py (filter_jobs/to_rows), AppTest smoke tests, telemetry off
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -35,3 +36,4 @@
 - 2026-11-11: #5 implemented, PR opened
 - 2026-11-11: #6 implemented, PR opened
 - 2026-11-11: #7 implemented, PR opened (M1 complete once merged)
+- 2026-11-11: #8 implemented, PR opened
