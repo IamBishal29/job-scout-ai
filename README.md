@@ -112,9 +112,11 @@ Use the **menu on the left**: **Home**, **Jobs**, **Tracker** and **Settings**. 
 3. **Preview digest** shows the email. **Send digest** sends it.
 
 ### 3. Jobs
-- The best matches are at the top, each with a **Score** bar and a **Why** reason.
-- Use the sidebar to filter: keyword (e.g. `.NET`, `LLM`), source, location, **Min match score**.
-- **Click a row** to see:
+- One **card per job**, best match first (or **Newest** via *Sort by*), 20 per page.
+- The **score badge** is coloured: green 75+ (strong), orange 50–74 (fair), red under 50 (weak),
+  grey not scored yet. Under the title is the AI's one-line reason.
+- Use the sidebar to filter: keyword (e.g. `.NET`, `LLM`), **Min match score**, location, source.
+- Click **Details** on a card to open a pop-up with:
   - **Match** score and reason
   - **Open job posting**: apply on the company's site
   - **Status** + **Notes** → **Save** (it appears on the **Tracker** page)
@@ -227,7 +229,7 @@ Run these from the project folder with the virtual environment active, or use
 | *"App password should be 16 letters"* | You pasted your normal Gmail password. Create an app password (Settings → Gmail → how-to). |
 | Test email not arriving | Check spam. Make sure 2-Step Verification is on. Create a new app password. |
 | *"Almost no text found"* when uploading a CV | It's a scanned PDF. Export a text-based PDF, or upload a `.txt`. |
-| Score / Why columns are empty | Click **Home → Score jobs**. It scores up to the batch size each time. |
+| Cards say "Not scored" | Click **Home → Score jobs**. It scores up to the batch size each time. |
 | Few or no jobs | Widen `role_keywords` / `locations` in `config.toml`, then **Fetch jobs** again. |
 | Digest says "Nothing new" | No new jobs scored at or above `[digest] min_score` (60) since the last email. |
 | Page won't open | Make sure `streamlit run app.py` is still running, and open http://localhost:8501. |

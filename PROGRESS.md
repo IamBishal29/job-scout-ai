@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M7 UI redesign (M1-M6 done)
-- Issue: #53 Home page (PR open)
-- Branch: feat/53-home-page
-- Next step: Syed merges #53 PR; then /next-task (#54 Job cards)
+- Issue: #54 Job cards (PR open)
+- Branch: feat/54-job-cards
+- Next step: Syed merges #54 PR; then /next-task (#55 Tracker board + Settings polish)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -34,7 +34,8 @@
 - #45 actions.py service layer (CLI + UI share it), Run tab: fetch / score (progress bar) / preview / send digest, disabled-with-hint buttons; README quick start - merged (M6 complete)
 - #50 README rewritten for non-developers: features, install, browser setup, daily use, scheduler, config, alerts, CLI, privacy, troubleshooting - merged
 - #52 st.navigation (Home/Jobs/Tracker/Settings), app_pages/ thin pages, ui_common (config, open_db, flash), ui_jobs/ui_tracker moved unchanged, indigo light theme, ADR 0005; fixed double-spaced test_views.py - merged
-- #53 Home: greeting, setup checklist, 4 stat cards (summarize), action cards (fetch/score/digest), top 5 matches, empty states
+- #53 Home: greeting, setup checklist, 4 stat cards (summarize), action cards (fetch/score/digest), top 5 matches, empty states - merged
+- #54 Job cards: score_badge colours, Sort by (best/newest), 20/page paginate, Details dialog (on_dismiss), table helpers removed
 
 ## Decisions waiting for Syed
 - #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
@@ -77,3 +78,4 @@
 - 2026-11-11: README rewrite (#50), PR opened
 - 2026-11-11: M7 UI redesign planned (#52-#55); #52 implemented, PR opened
 - 2026-11-11: #53 implemented, PR opened
+- 2026-11-11: #54 implemented, PR opened

@@ -41,42 +41,6 @@ def sort_by_score(jobs: Iterable[Job], scores: Mapping[str, Score]) -> list[Job]
     return sorted(jobs, key=lambda j: -scores[j.id].score if j.id in scores else 1)
 
 
-def to_rows(
-    jobs: Iterable[Job],
-    statuses: Mapping[str, Status] | None = None,
-    scores: Mapping[str, Score] | None = None,
-) -> list[dict]:
-    """Flatten jobs into table rows, in the column order the UI shows."""
-    statuses, scores = statuses or {}, scores or {}
-    return [
-        {
-            "Score": scores[job.id].score if job.id in scores else None,
-            "Posted": job.posted_at.date() if job.posted_at else None,
-            "Status": statuses.get(job.id, Status.NEW).value,
-            "Title": job.title,
-            "Company": job.company,
-            "Location": job.location,
-            "Source": job.source,
-            "Why": scores[job.id].reason if job.id in scores else "",
-            "Link": job.url,
-        }
-        for job in jobs
-    ]
-
-
-def resolve_selection(
-    shown_ids: list[str], selected_rows: list[int], previous_id: str | None
-) -> str | None:
-    """Which job is selected after this rerun?
-
-    A fresh table click wins. Otherwise keep the earlier choice (stored by id, not row
-    number) as long as that job is still visible under the current filters.
-    """
-    if selected_rows and 0 <= selected_rows[0] < len(shown_ids):
-        return shown_ids[selected_rows[0]]
-    return previous_id if previous_id in shown_ids else None
-
-
 _MD_SPECIAL = str.maketrans({c: "\\" + c for c in "\\`*_{}[]<>()#+-.!|$~"})
 
 
@@ -128,3 +92,33 @@ def greeting(hour: int) -> str:
     if hour < 12:
         return "Good morning"
     return "Good afternoon" if hour < 18 else "Good evening"
+
+
+SORTS = ("Best match", "Newest")
+
+
+def sort_jobs(jobs: Iterable[Job], scores: Mapping[str, Score], by: str) -> list[Job]:
+    """'Best match': highest score first, unscored after. 'Newest': most recently posted first."""
+    jobs = list(jobs)  # iterated twice below
+    if by == "Newest":
+        undated = [j for j in jobs if j.posted_at is None]
+        dated = sorted((j for j in jobs if j.posted_at), key=lambda j: j.posted_at, reverse=True)
+        return dated + undated
+    return sort_by_score(jobs, scores)
+
+
+def score_badge(score: int | None) -> tuple[str, str]:
+    """(label, colour) for a score badge. Colour carries meaning, so it is never decoration."""
+    if score is None:
+        return "Not scored", "gray"
+    if score >= STRONG_MATCH:
+        return f"{score} · strong", "green"
+    return (f"{score} · fair", "orange") if score >= 50 else (f"{score} · weak", "red")
+
+
+def paginate(items: list, page: int, per_page: int = 20) -> tuple[list, int, int]:
+    """(items on this page, number of pages, the page actually shown: clamped to 1..pages)."""
+    pages = max(1, -(-len(items) // per_page))  # ceiling division
+    page = min(max(page, 1), pages)
+    start = (page - 1) * per_page
+    return items[start : start + per_page], pages, page
