@@ -36,6 +36,8 @@ class Config:
     llm_requests_per_minute: int = 10
     cv_path: Path = Path("cv.md")
     based_in: str = ""
+    digest_top_n: int = 10
+    digest_min_score: int = 60
 
 
 def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
@@ -73,6 +75,8 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
         llm_requests_per_minute=int(data.get("llm", {}).get("requests_per_minute", 10)),
         cv_path=Path(data.get("llm", {}).get("cv_path", "cv.md")),
         based_in=str(data.get("profile", {}).get("based_in", "")),
+        digest_top_n=int(data.get("digest", {}).get("top_n", 10)),
+        digest_min_score=int(data.get("digest", {}).get("min_score", 60)),
         db_path=Path(data.get("database", {}).get("path", "data/jobpilot.db")),
     )
 

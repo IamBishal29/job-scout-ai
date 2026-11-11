@@ -60,6 +60,12 @@ MIGRATIONS = (
         updated_at   TEXT NOT NULL
     );
     """,
+    """
+    CREATE TABLE digested_jobs (
+        job_id  TEXT PRIMARY KEY REFERENCES jobs (id),
+        sent_at TEXT NOT NULL
+    );
+    """,
 )
 
 _COLUMNS = (
@@ -282,3 +288,49 @@ def save_cover_letter(conn: sqlite3.Connection, letter: CoverLetter) -> None:
                 letter.updated_at.isoformat(),
             ),
         )
+
+
+def digest_candidates(
+    conn: sqlite3.Connection, min_score: int, limit: int
+) -> list[tuple[Job, Score]]:
+    """Scored jobs at/above min_score that were never emailed, best first."""
+    rows = conn.execute(
+        """
+        SELECT j.*, s.score, s.reason, s.model, s.cv_hash, s.scored_at
+        FROM jobs j
+        JOIN scores s ON s.job_id = j.id
+        LEFT JOIN digested_jobs d ON d.job_id = j.id
+        WHERE d.job_id IS NULL AND s.score >= ?
+        ORDER BY s.score DESC, j.posted_at DESC
+        LIMIT ?
+        """,
+        (min_score, limit),
+    )
+    return [
+        (
+            _from_row(r),
+            Score(
+                r["id"],
+                r["score"],
+                r["reason"],
+                r["model"],
+                r["cv_hash"],
+                datetime.fromisoformat(r["scored_at"]),
+            ),
+        )
+        for r in rows
+    ]
+
+
+def mark_digested(conn: sqlite3.Connection, job_ids: Iterable[str], sent_at: datetime) -> None:
+    """Record jobs as emailed. Call only AFTER the email was sent successfully."""
+    with conn:
+        conn.executemany(
+            "INSERT OR IGNORE INTO digested_jobs (job_id, sent_at) VALUES (?, ?)",
+            ((job_id, sent_at.isoformat()) for job_id in job_ids),
+        )
+
+
+def last_digest_at(conn: sqlite3.Connection) -> datetime | None:
+    value = conn.execute("SELECT MAX(sent_at) FROM digested_jobs").fetchone()[0]
+    return datetime.fromisoformat(value) if value else None
