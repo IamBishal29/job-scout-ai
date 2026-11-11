@@ -7,6 +7,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from jobpilot.env_store import env_path
+
 DEFAULT_CONFIG_PATH = Path("config.toml")
 DEFAULT_LLM_MODEL = "gemini-flash-latest"  # Google alias for the current Flash model
 KNOWN_SOURCES = frozenset(
@@ -85,15 +87,15 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
     )
 
 
-def get_secret(name: str, env_file: Path | str = ".env") -> str:
+def get_secret(name: str, env_file: Path | str | None = None) -> str:
     """Return a secret from the environment, loading .env first if it exists.
 
     Real environment variables win over .env values (override=False).
     """
-    load_dotenv(env_file, override=False)
+    load_dotenv(env_file or env_path(), override=False)
     value = os.environ.get(name, "").strip()
     if not value:
-        raise ConfigError(f"Missing secret {name}. Add it to .env (see .env.example).")
+        raise ConfigError(f"Missing secret {name}. Add it in Settings or in .env.")
     return value
 
 

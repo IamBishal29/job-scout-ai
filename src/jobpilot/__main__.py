@@ -90,7 +90,7 @@ def daily(config: Config, score_limit: int, dry_run: bool) -> int:
 def llm_check(config: Config) -> int:
     """Prove the API key and model work, without ever printing the key."""
     try:
-        reply = llm.make_llm_client(config).generate("Reply with exactly: JobPilot OK")
+        reply = llm.check_connection(config)
     except (ConfigError, llm.LlmError) as e:
         print(f"LLM check failed: {e}", file=sys.stderr)
         return 1

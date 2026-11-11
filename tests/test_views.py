@@ -154,7 +154,7 @@ def test_app_shows_detail_for_selected_job(tmp_path, monkeypatch):
 
     at.sidebar.text_input[0].input(".net").run()  # filter hides the selected job
 
-    assert not at.subheader
+    assert "Tech Lead" not in [h.value for h in at.subheader]
 
 
 def test_app_saves_status_and_shows_it_in_tracker(tmp_path, monkeypatch):

@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M5 More Sources (MVP M1-M4 done)
-- Issue: #19 Bdjobs - closed as won't-do (ADR 0003, docs PR open)
-- Branch: docs/19-bdjobs-wont-do
-- Next step: Syed merges the ADR 0003 docs PR. Backlog #1-#19 then complete. Next: real-world setup (.env, cv.md, Gmail label, register-task) and plan new issues
+- Milestone: M6 Settings UI (M1-M5 done)
+- Issue: #42 Settings tab: Gemini key (PR open)
+- Branch: feat/42-settings-gemini-key
+- Next step: Syed merges #42 PR; then /next-task (#43 Gmail settings + test email)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -27,7 +27,8 @@
 - #16 mailer.py (STARTTLS, app password, multipart) + `digest [--dry-run]` CLI; build -> send -> mark - merged
 - #17 `python -m jobpilot daily` (fetch->score->digest, keeps going, exit code), scripts/daily.ps1 + register-task.ps1, README scheduling - merged (MVP complete)
 - #18 alerts.py: read-only IMAP (BODY.PEEK), link-based LinkedIn/Indeed parsers (synthetic fixtures, Syed's choice), TRUSTED_LOCATION, [alerts] config; source disabled by default - merged
-- #19 Bdjobs: robots.txt disallows unlisted bots (2nd `User-agent: *` group = Disallow: /) -> won't-do, ADR 0003
+- #19 Bdjobs: robots.txt disallows unlisted bots (2nd `User-agent: *` group = Disallow: /) -> won't-do, ADR 0003 - merged
+- #42 Settings tab: env_store (.env writes, atomic, no newline injection), masked Gemini key + Test key, localhost binding, Settings reachable on empty DB (ADR 0004)
 
 ## Decisions waiting for Syed
 - #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
@@ -63,3 +64,4 @@
 - 2026-11-11: #18 started; IMAP part pushed, parsers wait for Syed's sample .eml files
 - 2026-11-11: #18 finished with synthetic samples at Syed's request, PR opened
 - 2026-11-11: #19 investigated; Bdjobs robots.txt disallows bots; closed as won't-do (Syed's decision), ADR 0003
+- 2026-11-11: M6 Settings UI planned (#42-#45); #42 implemented, PR opened
