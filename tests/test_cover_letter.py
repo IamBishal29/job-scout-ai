@@ -65,7 +65,7 @@ def app(tmp_path, monkeypatch):
     monkeypatch.setenv("JOBPILOT_CONFIG", str(cfg))
     monkeypatch.setattr(llm, "make_llm_client", lambda c: FakeLlmClient([DRAFT]))
     at = AppTest.from_file(APP, default_timeout=30)
-    at.session_state["selected_job_id"] = "a:1"
+    at.session_state["details_job"] = "a:1"  # open the details dialog
     return open_page(at.run(), "jobs"), tmp_path / "j.db"
 
 

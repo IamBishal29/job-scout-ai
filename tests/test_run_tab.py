@@ -117,8 +117,8 @@ def test_run_tab_fetch_score_preview_send(setup, monkeypatch):
 
     at = click(at, "Score jobs")
     assert any("Scored 1 job(s)." in s.value for s in at.success)
-    table = open_page(at, "jobs").dataframe[0].value.set_index("Title")
-    assert table.loc["Senior .NET Developer", "Score"] == 91  # Jobs page shows the new score
+    jobs_page = " ".join(m.value for m in open_page(at, "jobs").markdown)
+    assert "91 · strong" in jobs_page  # the Jobs page card shows the new score badge
     at = open_page(at, "home")
 
     at = click(at, "Preview digest")
