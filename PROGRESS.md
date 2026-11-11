@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M4 Daily Digest (M1-M3 done)
-- Issue: #15 Digest builder (PR open)
-- Branch: feat/15-digest-builder
-- Next step: Syed merges #15 PR; then /next-task (#16 Gmail SMTP sender + digest CLI - needs Gmail app password in .env)
+- Issue: #16 Gmail SMTP sender + digest CLI (PR open)
+- Branch: feat/16-smtp-digest
+- Next step: Syed merges #16 PR; adds SMTP_USER/SMTP_APP_PASSWORD/DIGEST_TO to .env; tries `digest --dry-run` then `digest`; then /next-task (#17 Schedule daily run)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -23,7 +23,8 @@
 - #12 matcher.py + scores table (migration v3) + `score --limit` CLI; prompt includes based_in (Dhaka); real DB at v3, 114 unscored - merged
 - #13 dashboard: Score progress column + Why, best-first sort (unscored last), min-score slider, Match metric in detail - merged
 - #14 cover_letter.py (grounded template, placeholders + unsupported-number checks), cover_letters table (migration v4), draft UI with copy; real DB at v4 - merged (M3 complete)
-- #15 digest.py (HTML + text, escaped), digested_jobs log (migration v5), [digest] top_n/min_score; real DB at v5
+- #15 digest.py (HTML + text, escaped), digested_jobs log (migration v5), [digest] top_n/min_score; real DB at v5 - merged
+- #16 mailer.py (STARTTLS, app password, multipart) + `digest [--dry-run]` CLI; build -> send -> mark
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -52,3 +53,4 @@
 - 2026-11-11: #13 implemented, PR opened
 - 2026-11-11: #14 implemented, PR opened; M3 features all built, live LLM run still pending key + CV
 - 2026-11-11: #15 implemented, PR opened
+- 2026-11-11: #16 implemented, PR opened; caught + tested a misplaced __main__ guard
