@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 DEFAULT_CONFIG_PATH = Path("config.toml")
 DEFAULT_LLM_MODEL = "gemini-flash-latest"  # Google alias for the current Flash model
 KNOWN_SOURCES = frozenset(
-    {"remotive", "remoteok", "arbeitnow", "weworkremotely", "greenhouse", "lever"}
+    {"remotive", "remoteok", "arbeitnow", "weworkremotely", "greenhouse", "lever", "alerts"}
 )
 BOARD_SOURCES = ("greenhouse", "lever")  # sources configured with a list of companies
 
@@ -38,6 +38,8 @@ class Config:
     based_in: str = ""
     digest_top_n: int = 10
     digest_min_score: int = 60
+    alerts_folder: str = "JobAlerts"
+    alerts_days: int = 7
 
 
 def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
@@ -77,6 +79,8 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
         based_in=str(data.get("profile", {}).get("based_in", "")),
         digest_top_n=int(data.get("digest", {}).get("top_n", 10)),
         digest_min_score=int(data.get("digest", {}).get("min_score", 60)),
+        alerts_folder=str(data.get("alerts", {}).get("imap_folder", "JobAlerts")),
+        alerts_days=int(data.get("alerts", {}).get("days", 7)),
         db_path=Path(data.get("database", {}).get("path", "data/jobpilot.db")),
     )
 
