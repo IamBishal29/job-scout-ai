@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M4 Daily Digest (M1-M3 done)
-- Issue: #16 Gmail SMTP sender + digest CLI (PR open)
-- Branch: feat/16-smtp-digest
-- Next step: Syed merges #16 PR; adds SMTP_USER/SMTP_APP_PASSWORD/DIGEST_TO to .env; tries `digest --dry-run` then `digest`; then /next-task (#17 Schedule daily run)
+- Milestone: M4 Daily Digest (last issue in review) -> next M5 More Sources
+- Issue: #17 Schedule daily run (PR open)
+- Branch: feat/17-daily-schedule
+- Next step: Syed merges #17 PR (MVP M1-M4 complete); sets up .env (Gemini key, Gmail app password) + cv.md; runs scripts\register-task.ps1; then /next-task (#18 LinkedIn/Indeed alert emails, M5)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -24,7 +24,8 @@
 - #13 dashboard: Score progress column + Why, best-first sort (unscored last), min-score slider, Match metric in detail - merged
 - #14 cover_letter.py (grounded template, placeholders + unsupported-number checks), cover_letters table (migration v4), draft UI with copy; real DB at v4 - merged (M3 complete)
 - #15 digest.py (HTML + text, escaped), digested_jobs log (migration v5), [digest] top_n/min_score; real DB at v5 - merged
-- #16 mailer.py (STARTTLS, app password, multipart) + `digest [--dry-run]` CLI; build -> send -> mark
+- #16 mailer.py (STARTTLS, app password, multipart) + `digest [--dry-run]` CLI; build -> send -> mark - merged
+- #17 `python -m jobpilot daily` (fetch->score->digest, keeps going, exit code), scripts/daily.ps1 + register-task.ps1, README scheduling
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -33,7 +34,8 @@
 - Remotive free API returns only ~13 jobs (24h delayed); volume now comes from RemoteOK/Arbeitnow
 - Get a free Gemini API key (aistudio.google.com, no card) and add GEMINI_API_KEY to .env, then run `python -m jobpilot llm-check`
 - Put your CV as plain text/markdown in cv.md (git-ignored) before #12
-- Gmail app password needed before M4 (requires 2-step verification)
+- Gmail app password (2-step verification) -> SMTP_USER, SMTP_APP_PASSWORD, DIGEST_TO in .env
+- Run scripts\register-task.ps1 yourself (auto mode blocked me from running PowerShell with -ExecutionPolicy Bypass)
 
 ## Log
 - 2026-11-11: agent kit added
@@ -54,3 +56,4 @@
 - 2026-11-11: #14 implemented, PR opened; M3 features all built, live LLM run still pending key + CV
 - 2026-11-11: #15 implemented, PR opened
 - 2026-11-11: #16 implemented, PR opened; caught + tested a misplaced __main__ guard
+- 2026-11-11: #17 implemented, PR opened; PowerShell run of daily.ps1 left to Syed
