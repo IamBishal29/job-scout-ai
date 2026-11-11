@@ -13,6 +13,7 @@ from jobpilot import cover_letter, db, llm
 from jobpilot.config import ConfigError, load_config
 from jobpilot.models import Job, Status, utc_now
 from jobpilot.tracker import change_status, next_statuses, update_notes
+from jobpilot.ui_settings import render_settings
 from jobpilot.views import (
     JobFilter,
     filter_jobs,
@@ -39,10 +40,6 @@ scores = db.get_scores(conn)
 
 if flash := st.session_state.pop("flash", None):  # message from the previous run
     st.success(flash)
-
-if not jobs:
-    st.info("No jobs yet. Run `python -m jobpilot fetch` first.")
-    st.stop()
 
 
 def show_detail(job: Job) -> None:
@@ -120,50 +117,56 @@ def show_cover_letter(job: Job) -> None:
         st.code(body, language=None, wrap_lines=True)  # has a copy button
 
 
-jobs_tab, tracker_tab = st.tabs(["Jobs", "Tracker"])
+jobs_tab, tracker_tab, settings_tab = st.tabs(["Jobs", "Tracker", "Settings"])
 
 with jobs_tab:
-    with st.sidebar:
-        st.header("Filters")
-        sources = st.multiselect("Source", sorted({j.source for j in jobs}))
-        keyword = st.text_input("Keyword", placeholder="e.g. .NET, LLM, Azure")
-        location = st.text_input("Location contains", placeholder="e.g. worldwide")
-        min_score = st.slider("Min match score", 0, 100, 0, step=5, help="0 shows unscored too")
-
-    job_filter = JobFilter(frozenset(sources), keyword, location, min_score)
-    shown = sort_by_score(filter_jobs(jobs, job_filter, scores), scores)
-    st.caption(
-        f"Showing {len(shown)} of {len(jobs)} jobs ({len(scores)} scored), best match first. "
-        "You always apply yourself on the site."
-    )
-
-    table_col, detail_col = st.columns([3, 2])
-    with table_col:
-        event = st.dataframe(
-            to_rows(shown, statuses, scores),
-            hide_index=True,
-            column_config={
-                "Score": st.column_config.ProgressColumn(
-                    "Score", min_value=0, max_value=100, format="%d"
-                ),
-                "Why": st.column_config.TextColumn("Why", width="medium"),
-                "Link": st.column_config.LinkColumn("Link", display_text="Open"),
-            },
-            on_select="rerun",
-            selection_mode="single-row",
-            key=f"jobs_table_{hash(job_filter)}",  # new filters -> fresh table selection
+    if not jobs:  # first run: still show the tabs so Settings is reachable
+        st.info(
+            "No jobs yet. Add your settings in the Settings tab, then run "
+            "`python -m jobpilot fetch`."
         )
-    st.session_state.selected_job_id = resolve_selection(
-        [j.id for j in shown],
-        event.selection.rows if event else [],
-        st.session_state.get("selected_job_id"),
-    )
-    with detail_col:
-        selected = next((j for j in shown if j.id == st.session_state.selected_job_id), None)
-        if selected:
-            show_detail(selected)
-        else:
-            st.info("Select a row to see the full job description.")
+    else:
+        with st.sidebar:
+            st.header("Filters")
+            sources = st.multiselect("Source", sorted({j.source for j in jobs}))
+            keyword = st.text_input("Keyword", placeholder="e.g. .NET, LLM, Azure")
+            location = st.text_input("Location contains", placeholder="e.g. worldwide")
+            min_score = st.slider("Min match score", 0, 100, 0, step=5, help="0 shows unscored too")
+
+        job_filter = JobFilter(frozenset(sources), keyword, location, min_score)
+        shown = sort_by_score(filter_jobs(jobs, job_filter, scores), scores)
+        st.caption(
+            f"Showing {len(shown)} of {len(jobs)} jobs ({len(scores)} scored), best match first. "
+            "You always apply yourself on the site."
+        )
+
+        table_col, detail_col = st.columns([3, 2])
+        with table_col:
+            event = st.dataframe(
+                to_rows(shown, statuses, scores),
+                hide_index=True,
+                column_config={
+                    "Score": st.column_config.ProgressColumn(
+                        "Score", min_value=0, max_value=100, format="%d"
+                    ),
+                    "Why": st.column_config.TextColumn("Why", width="medium"),
+                    "Link": st.column_config.LinkColumn("Link", display_text="Open"),
+                },
+                on_select="rerun",
+                selection_mode="single-row",
+                key=f"jobs_table_{hash(job_filter)}",  # new filters -> fresh table selection
+            )
+        st.session_state.selected_job_id = resolve_selection(
+            [j.id for j in shown],
+            event.selection.rows if event else [],
+            st.session_state.get("selected_job_id"),
+        )
+        with detail_col:
+            selected = next((j for j in shown if j.id == st.session_state.selected_job_id), None)
+            if selected:
+                show_detail(selected)
+            else:
+                st.info("Select a row to see the full job description.")
 
 with tracker_tab:
     tracked = db.list_applications(conn)
@@ -190,3 +193,6 @@ with tracker_tab:
             )
 
 conn.close()
+
+with settings_tab:
+    render_settings(config)

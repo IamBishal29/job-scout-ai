@@ -1,2 +1,6 @@
 [browser]
 gatherUsageStats = false
+
+[server]
+# Only this computer can open the dashboard: the Settings tab can save secrets.
+address = "localhost"
