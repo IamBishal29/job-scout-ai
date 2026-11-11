@@ -5,7 +5,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from jobpilot.db import connect, init_db, insert_jobs
-from jobpilot.models import Job
+from jobpilot.models import Job, Status
 from jobpilot.views import JobFilter, filter_jobs, md_escape, resolve_selection, to_rows
 
 APP = str(Path(__file__).parents[1] / "app.py")
@@ -32,13 +32,18 @@ def test_filter_jobs(f, expected):
     assert [j.id for j in filter_jobs(JOBS, f)] == expected
 
 
+def test_to_rows_defaults_status_to_new():
+    assert to_rows(JOBS[:1])[0]["Status"] == "new"
+
+
 def test_to_rows_formats_date_and_keeps_link():
     job = Job(
         "x:1", "s", "T", "C", "Remote", "https://x", posted_at=datetime(2026, 11, 5, tzinfo=UTC)
     )
-    assert to_rows([job]) == [
+    assert to_rows([job], {"x:1": Status.APPLIED}) == [
         {
             "Posted": datetime(2026, 11, 5).date(),
+            "Status": "applied",
             "Title": "T",
             "Company": "C",
             "Location": "Remote",
@@ -110,3 +115,20 @@ def test_app_shows_detail_for_selected_job(tmp_path, monkeypatch):
 
     at.sidebar.text_input[0].input(".net").run()  # filter hides the selected job
     assert not at.subheader
+
+
+def test_app_saves_status_and_shows_it_in_tracker(tmp_path, monkeypatch):
+    at = run_app(tmp_path, monkeypatch, JOBS)
+    assert "Nothing tracked yet" in at.info[-1].value
+
+    at.session_state["selected_job_id"] = "a:1"
+    at.run()
+    at.selectbox[0].set_value(Status.APPLIED)
+    at.text_area[0].input("sent CV via site")
+    at.button[0].click().run()  # the form's Save button
+
+    assert not at.exception
+    assert "is now 'applied'" in at.success[0].value
+    table = at.dataframe[0].value.set_index("Title")
+    assert table.loc["Senior .NET Developer", "Status"] == "applied"
+    assert "Applied (1)" in [h.value for h in at.subheader]  # tracker tab heading
