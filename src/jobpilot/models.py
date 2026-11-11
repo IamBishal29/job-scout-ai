@@ -87,3 +87,15 @@ class Score:
     model: str
     cv_hash: str  # which CV version was used (lets us spot stale scores later)
     scored_at: datetime = field(default_factory=utc_now)
+
+
+@dataclass(frozen=True, slots=True)
+class CoverLetter:
+    """A draft I edit and send myself. JobPilot never sends it anywhere."""
+
+    job_id: str
+    body: str
+    model: str
+    cv_hash: str
+    generated_at: datetime = field(default_factory=utc_now)
+    updated_at: datetime = field(default_factory=utc_now)

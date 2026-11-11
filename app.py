@@ -5,12 +5,13 @@ Keep it thin: data comes from jobpilot.db, rules from jobpilot.tracker, logic fr
 """
 
 import os
+from dataclasses import replace
 
 import streamlit as st
 
-from jobpilot import db
+from jobpilot import cover_letter, db, llm
 from jobpilot.config import ConfigError, load_config
-from jobpilot.models import Job, Status
+from jobpilot.models import Job, Status, utc_now
 from jobpilot.tracker import change_status, next_statuses, update_notes
 from jobpilot.views import (
     JobFilter,
@@ -69,8 +70,54 @@ def show_detail(job: Job) -> None:
             st.session_state.flash = f"Saved: {job.title} is now '{updated.status}'."
             st.rerun()  # redraw so the table and tracker show the new status
 
+    show_cover_letter(job)
+
     with st.container(height=400):
         st.markdown(md_escape(job.description) or "_No description provided._")
+
+
+def read_cv() -> str | None:
+    try:
+        return config.cv_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return None
+
+
+def show_cover_letter(job: Job) -> None:
+    draft = db.get_cover_letter(conn, job.id)
+    with st.expander("Cover letter draft", expanded=draft is not None):
+        st.caption("Draft only: JobPilot never sends anything. Edit it, then paste it yourself.")
+        cv_text = read_cv()
+        if st.button("Regenerate draft" if draft else "Generate draft", key=f"gen_{job.id}"):
+            if cv_text is None:
+                st.error(f"CV not found at {config.cv_path}. Save your CV there as text.")
+                return
+            try:
+                client = llm.make_llm_client(config)
+                letter = cover_letter.generate_draft(client, job, cv_text, config.llm_model)
+            except (ConfigError, llm.LlmError) as e:
+                st.error(f"Could not generate a draft: {e}")
+                return
+            db.save_cover_letter(conn, letter)
+            st.session_state.flash = f"Draft ready for {job.title}. Check it before using it."
+            st.rerun()
+        if draft is None:
+            return
+
+        # key includes generated_at: a regenerated draft gets a fresh text box
+        body = st.text_area(
+            "Your draft", draft.body, height=300, key=f"draft_{job.id}_{draft.generated_at}"
+        )
+        if st.button("Save edits", key=f"save_draft_{job.id}"):
+            db.save_cover_letter(conn, replace(draft, body=body, updated_at=utc_now()))
+            st.session_state.flash = "Draft saved."
+            st.rerun()
+        if gaps := cover_letter.placeholders(body):
+            st.warning("Fill in before sending: " + ", ".join(gaps))
+        sources = (cv_text or "", job.title, job.description)
+        if numbers := cover_letter.unsupported_numbers(body, *sources):
+            st.warning("Numbers not found in your CV or the job, check them: " + ", ".join(numbers))
+        st.code(body, language=None, wrap_lines=True)  # has a copy button
 
 
 jobs_tab, tracker_tab = st.tabs(["Jobs", "Tracker"])
