@@ -15,9 +15,9 @@ copy .env.example .env     # then fill in your keys
 
 ## Run
 ```powershell
-python -m jobpilot
+python -m jobpilot fetch    # collect jobs into data/jobpilot.db
+streamlit run app.py        # open the dashboard
 ```
-(The Streamlit dashboard, `streamlit run app.py`, arrives in milestone M1.)
 
 ## Test & lint
 ```powershell

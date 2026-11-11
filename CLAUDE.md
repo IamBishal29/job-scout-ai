@@ -45,7 +45,7 @@ Never read, print or commit `.env`, tokens or keys. Put placeholders in `.env.ex
 - Stack: Python 3.12 (venv) + Streamlit + SQLite + Gemini free tier; Gmail SMTP digest.
   Package in `src/jobpilot/`, tests in `tests/`. See docs/ARCHITECTURE.md.
 - Setup: `py -3.12 -m venv .venv; .venv\Scripts\Activate.ps1; pip install -e ".[dev]"`
-- Run: `python -m jobpilot` (later: `streamlit run app.py`)
+- Run: `python -m jobpilot fetch` then `streamlit run app.py`
 - Test: `pytest`
 - Lint: `ruff check .` and `ruff format --check .`
 - PR size: keep each PR moderate (~100-200 changed lines); split bigger work.
