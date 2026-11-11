@@ -12,7 +12,14 @@ from jobpilot import db
 from jobpilot.config import ConfigError, load_config
 from jobpilot.models import Job, Status
 from jobpilot.tracker import change_status, next_statuses, update_notes
-from jobpilot.views import JobFilter, filter_jobs, md_escape, resolve_selection, to_rows
+from jobpilot.views import (
+    JobFilter,
+    filter_jobs,
+    md_escape,
+    resolve_selection,
+    sort_by_score,
+    to_rows,
+)
 
 st.set_page_config(page_title="JobPilot", layout="wide")
 st.title("JobPilot")
@@ -27,6 +34,7 @@ conn = db.connect(config.db_path)
 db.init_db(conn)  # also applies pending migrations
 jobs = db.list_jobs(conn)
 statuses = db.application_statuses(conn)
+scores = db.get_scores(conn)
 
 if flash := st.session_state.pop("flash", None):  # message from the previous run
     st.success(flash)
@@ -41,6 +49,13 @@ def show_detail(job: Job) -> None:
     posted = job.posted_at.date().isoformat() if job.posted_at else "unknown date"
     st.caption(f"{job.company} · {job.location} · {job.source} · posted {posted}")
     st.link_button("Open job posting", job.url)  # opens the site; you apply there yourself
+
+    if score := scores.get(job.id):
+        st.metric("Match", f"{score.score}/100")
+        st.write(score.reason)
+        st.caption(f"AI estimate by {score.model} on {score.scored_at.date()}. Use your judgement.")
+    else:
+        st.caption("Not scored yet. Run `python -m jobpilot score`.")
 
     app = db.get_application(conn, job.id)
     with st.form(f"track_{job.id}"):
@@ -66,17 +81,27 @@ with jobs_tab:
         sources = st.multiselect("Source", sorted({j.source for j in jobs}))
         keyword = st.text_input("Keyword", placeholder="e.g. .NET, LLM, Azure")
         location = st.text_input("Location contains", placeholder="e.g. worldwide")
+        min_score = st.slider("Min match score", 0, 100, 0, step=5, help="0 shows unscored too")
 
-    job_filter = JobFilter(frozenset(sources), keyword, location)
-    shown = filter_jobs(jobs, job_filter)
-    st.caption(f"Showing {len(shown)} of {len(jobs)} jobs. You always apply yourself on the site.")
+    job_filter = JobFilter(frozenset(sources), keyword, location, min_score)
+    shown = sort_by_score(filter_jobs(jobs, job_filter, scores), scores)
+    st.caption(
+        f"Showing {len(shown)} of {len(jobs)} jobs ({len(scores)} scored), best match first. "
+        "You always apply yourself on the site."
+    )
 
     table_col, detail_col = st.columns([3, 2])
     with table_col:
         event = st.dataframe(
-            to_rows(shown, statuses),
+            to_rows(shown, statuses, scores),
             hide_index=True,
-            column_config={"Link": st.column_config.LinkColumn("Link", display_text="Open")},
+            column_config={
+                "Score": st.column_config.ProgressColumn(
+                    "Score", min_value=0, max_value=100, format="%d"
+                ),
+                "Why": st.column_config.TextColumn("Why", width="medium"),
+                "Link": st.column_config.LinkColumn("Link", display_text="Open"),
+            },
             on_select="rerun",
             selection_mode="single-row",
             key=f"jobs_table_{hash(job_filter)}",  # new filters -> fresh table selection
