@@ -11,6 +11,12 @@ role_keywords = [
 ]
 # A job matches if its location contains any of these (case-insensitive).
 locations = ["remote", "worldwide", "anywhere", "bangladesh", "dhaka"]
+# ...unless it also contains one of these (remote roles restricted to regions you can't work from).
+exclude_locations = [
+    "us only", "usa only", "u.s. only", "united states only", "us-only",
+    "north america only", "latin america only", "canada only",
+    "uk only", "europe only", "eu only",
+]
 
 [sources]
 enabled = ["remotive", "remoteok", "arbeitnow", "weworkremotely"]

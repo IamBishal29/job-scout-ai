@@ -7,5 +7,5 @@ def test_version_is_set():
 
 
 def test_main_prints_version(capsys):
-    main()
+    assert main([]) == 0
     assert "JobPilot 0.1.0" in capsys.readouterr().out

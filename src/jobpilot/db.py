@@ -19,9 +19,11 @@ CREATE TABLE IF NOT EXISTS jobs (
     url         TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     posted_at   TEXT,
-    fetched_at  TEXT NOT NULL
+    fetched_at  TEXT NOT NULL,
+    dedupe_key  TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_jobs_posted_at ON jobs (posted_at);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_jobs_dedupe_key ON jobs (dedupe_key);
 """
 
 _COLUMNS = (
@@ -34,6 +36,7 @@ _COLUMNS = (
     "description",
     "posted_at",
     "fetched_at",
+    "dedupe_key",
 )
 
 
@@ -52,7 +55,10 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 
 def insert_jobs(conn: sqlite3.Connection, jobs: Iterable[Job]) -> int:
-    """Insert jobs, skipping ids already stored. Returns how many were new."""
+    """Insert jobs, skipping any whose id OR dedupe_key is already stored.
+
+    Returns how many were new, so running the same fetch twice inserts 0 the second time.
+    """
     sql = (
         f"INSERT OR IGNORE INTO jobs ({', '.join(_COLUMNS)}) "
         f"VALUES ({', '.join('?' * len(_COLUMNS))})"
@@ -84,6 +90,7 @@ def _to_row(job: Job) -> tuple:
         job.description,
         job.posted_at.isoformat() if job.posted_at else None,
         job.fetched_at.isoformat(),
+        job.dedupe_key,
     )
 
 
