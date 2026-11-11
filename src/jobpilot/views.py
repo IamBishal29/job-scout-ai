@@ -40,3 +40,24 @@ def to_rows(jobs: Iterable[Job]) -> list[dict]:
         }
         for job in jobs
     ]
+
+
+def resolve_selection(
+    shown_ids: list[str], selected_rows: list[int], previous_id: str | None
+) -> str | None:
+    """Which job is selected after this rerun?
+
+    A fresh table click wins. Otherwise keep the earlier choice (stored by id, not row
+    number) as long as that job is still visible under the current filters.
+    """
+    if selected_rows and 0 <= selected_rows[0] < len(shown_ids):
+        return shown_ids[selected_rows[0]]
+    return previous_id if previous_id in shown_ids else None
+
+
+_MD_SPECIAL = str.maketrans({c: "\\" + c for c in "\\`*_{}[]<>()#+-.!|$~"})
+
+
+def md_escape(text: str) -> str:
+    """Show text literally in st.markdown: escape Markdown symbols, keep line breaks."""
+    return text.translate(_MD_SPECIAL).replace("\n", "  \n")
