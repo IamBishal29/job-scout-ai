@@ -1,13 +1,15 @@
-"""Command line: `python -m jobpilot fetch | score | llm-check`."""
+"""Command line: `python -m jobpilot fetch | score | digest | llm-check`."""
 
 import argparse
 import logging
 import sys
 from collections.abc import Sequence
 
-from jobpilot import __version__, llm, matcher
-from jobpilot.config import DEFAULT_CONFIG_PATH, Config, ConfigError, load_config
+from jobpilot import __version__, db, llm, mailer, matcher
+from jobpilot.config import DEFAULT_CONFIG_PATH, Config, ConfigError, get_secret, load_config
 from jobpilot.db import connect, init_db
+from jobpilot.digest import build_digest
+from jobpilot.models import utc_now
 from jobpilot.pipeline import SourceResult, run_fetch
 from jobpilot.sources.http import make_client
 
@@ -21,6 +23,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands.add_parser("llm-check", help="send one tiny prompt to check your Gemini key/model")
     score_cmd = commands.add_parser("score", help="score unscored jobs against your CV (LLM)")
     score_cmd.add_argument("--limit", type=int, default=20, help="max jobs per run (default 20)")
+    digest_cmd = commands.add_parser("digest", help="email your best new matches (Gmail)")
+    digest_cmd.add_argument("--dry-run", action="store_true", help="print it, send nothing")
     args = parser.parse_args(argv)
 
     if args.command is None:
@@ -39,6 +43,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return llm_check(config)
     if args.command == "score":
         return score(config, args.limit)
+    if args.command == "digest":
+        return digest(config, args.dry_run)
 
     conn = connect(config.db_path)
     try:
@@ -93,6 +99,36 @@ def format_results(results: list[SourceResult]) -> str:
     total = [sum(getattr(r, f) for r in results) for f in ("fetched", "matched", "new")]
     lines.append(f"{'total':<16}{total[0]:>8}{total[1]:>9}{total[2]:>6}")
     return "\n".join(lines)
+
+
+def digest(config: Config, dry_run: bool) -> int:
+    """Build -> send -> mark. Marking only after a successful send makes reruns safe."""
+    conn = connect(config.db_path)
+    try:
+        init_db(conn)
+        items = db.digest_candidates(conn, config.digest_min_score, config.digest_top_n)
+        built = build_digest(items, utc_now(), db.last_digest_at(conn))
+        if built is None:
+            print(f"Nothing new scored {config.digest_min_score}+ since the last digest.")
+            return 0
+        if dry_run:
+            print("DRY RUN (nothing sent, nothing marked)")
+            print(f"Subject: {built.subject}")
+            print()
+            print(built.text)
+            return 0
+        try:
+            sender = get_secret("SMTP_USER")
+            message = mailer.build_message(built, sender, get_secret("DIGEST_TO"))
+            mailer.send_message(message, sender, get_secret("SMTP_APP_PASSWORD"))
+        except (ConfigError, mailer.MailError) as e:
+            print(f"Digest not sent: {e}", file=sys.stderr)
+            return 1
+        db.mark_digested(conn, built.job_ids, utc_now())
+        print(f"Sent digest with {len(built.job_ids)} job(s): {built.subject}")
+        return 0
+    finally:
+        conn.close()
 
 
 if __name__ == "__main__":
