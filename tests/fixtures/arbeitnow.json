@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "slug": "backend-engineer-301",
+      "company_name": "Flexport",
+      "title": "Backend Engineer (.NET)",
+      "description": "&lt;p&gt;C# &amp;amp; Azure&lt;/p&gt;",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/flexport/backend-engineer-301",
+      "location": "Berlin",
+      "created_at": 1794380115
+    },
+    {
+      "slug": "account-executive-302",
+      "company_name": "Acme",
+      "title": "Account Executive",
+      "description": "",
+      "remote": false,
+      "url": "https://www.arbeitnow.com/jobs/companies/acme/account-executive-302",
+      "location": "Munich",
+      "created_at": 1794380000
+    }
+  ],
+  "links": {"next": "https://www.arbeitnow.com/api/job-board-api?page=2"}
+}
