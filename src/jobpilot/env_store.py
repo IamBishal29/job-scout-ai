@@ -7,10 +7,17 @@ import os
 import re
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 
 def env_path() -> Path:
     """Where .env lives. JOBPILOT_ENV overrides it (used by tests)."""
     return Path(os.environ.get("JOBPILOT_ENV", ".env"))
+
+
+def load_env(path: Path | None = None) -> None:
+    """Load .env into os.environ (real environment variables still win)."""
+    load_dotenv(path or env_path(), override=False)
 
 
 def save_secrets(values: dict[str, str], path: Path | None = None) -> None:
