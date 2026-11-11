@@ -4,7 +4,7 @@ import os
 
 import streamlit as st
 
-from jobpilot import llm, mailer
+from jobpilot import cv_import, llm, mailer
 from jobpilot.config import Config, ConfigError, get_secret
 from jobpilot.env_store import env_path, load_env, save_secrets, secret_status
 
@@ -25,7 +25,44 @@ def render_settings(config: Config) -> None:
         st.success(note)
     _gemini_section(config)
     st.divider()
+    _cv_section(config)
+    st.divider()
     _gmail_section()
+
+
+def _cv_section(config: Config) -> None:
+    st.subheader("Your CV")
+    info = cv_import.cv_info(config.cv_path)
+    if info.exists:
+        st.write(f"Status: **saved** ({info.words} words, updated {info.updated_at:%d %b %Y})")
+    else:
+        st.write("Status: **not set**. Scoring and cover letters need it.")
+    st.caption(
+        "Stays on this computer; its text is sent to Gemini when scoring jobs or drafting "
+        "letters. Leave out your phone number and home address."
+    )
+
+    upload = st.file_uploader("Upload CV (PDF, TXT or MD)", type=["pdf", "txt", "md"])
+    if upload is not None:
+        try:
+            draft, source = cv_import.extract_text(upload.name, upload.getvalue()), upload.file_id
+        except cv_import.CvImportError as e:
+            st.error(str(e))
+            return
+        st.info("Check the extracted text below and fix anything that came out wrong.")
+    elif info.exists:
+        draft, source = config.cv_path.read_text(encoding="utf-8"), f"saved-{info.updated_at}"
+    else:
+        return
+
+    # a new upload (or a newly saved CV) gets a fresh text box instead of stale edits
+    text = st.text_area("CV text", draft, height=300, key=f"cv_text_{source}")
+    if st.button("Save CV"):
+        if len(text.split()) < 20:
+            st.error("That's too short to be a CV.")
+        else:
+            cv_import.save_cv(config.cv_path, text)
+            _saved("CV saved. New scores and cover letters will use it.")
 
 
 def _saved(message: str) -> None:
