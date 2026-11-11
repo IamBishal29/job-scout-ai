@@ -33,3 +33,11 @@ path = "data/jobpilot.db"
 [llm]
 # Gemini model id. The free tier has small per-model quotas; see Google AI Studio for yours.
 model = "gemini-flash-latest"
+# Stay under the free tier per-minute limit (scoring waits between calls).
+requests_per_minute = 10
+# Your CV in plain text/markdown. Git-ignored: it never leaves your machine except in LLM prompts.
+cv_path = "cv.md"
+
+[profile]
+# Where you work from. The scorer marks jobs you can't take from here (e.g. "US only") down.
+based_in = "Dhaka, Bangladesh"

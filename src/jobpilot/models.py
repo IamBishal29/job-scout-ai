@@ -75,3 +75,15 @@ class Application:
     notes: str = ""
     applied_at: datetime | None = None
     updated_at: datetime = field(default_factory=utc_now)
+
+
+@dataclass(frozen=True, slots=True)
+class Score:
+    """How well a job fits my CV, judged by the LLM. Cached: one per job."""
+
+    job_id: str
+    score: int  # 0-100
+    reason: str
+    model: str
+    cv_hash: str  # which CV version was used (lets us spot stale scores later)
+    scored_at: datetime = field(default_factory=utc_now)

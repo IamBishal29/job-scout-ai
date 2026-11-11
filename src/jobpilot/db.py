@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 
-from jobpilot.models import Application, Job, Status
+from jobpilot.models import Application, Job, Score, Status
 
 DEFAULT_DB_PATH = Path("data") / "jobpilot.db"
 
@@ -39,6 +39,16 @@ MIGRATIONS = (
         updated_at TEXT NOT NULL
     );
     CREATE INDEX ix_applications_status ON applications (status);
+    """,
+    """
+    CREATE TABLE scores (
+        job_id    TEXT PRIMARY KEY REFERENCES jobs (id),
+        score     INTEGER NOT NULL CHECK (score BETWEEN 0 AND 100),
+        reason    TEXT NOT NULL,
+        model     TEXT NOT NULL,
+        cv_hash   TEXT NOT NULL,
+        scored_at TEXT NOT NULL
+    );
     """,
 )
 
@@ -186,3 +196,48 @@ def _app_from_row(row: sqlite3.Row) -> Application:
         applied_at=datetime.fromisoformat(applied) if applied else None,
         updated_at=datetime.fromisoformat(row["updated_at"]),
     )
+
+
+def unscored_jobs(conn: sqlite3.Connection, limit: int | None = None) -> list[Job]:
+    """Jobs with no score yet, newest first. Scored jobs are never sent to the LLM again."""
+    sql = """
+        SELECT j.* FROM jobs j LEFT JOIN scores s ON s.job_id = j.id
+        WHERE s.job_id IS NULL
+        ORDER BY j.posted_at IS NULL, j.posted_at DESC, j.fetched_at DESC
+    """
+    params: tuple[int, ...] = ()
+    if limit is not None:
+        sql += " LIMIT ?"
+        params = (limit,)
+    return [_from_row(row) for row in conn.execute(sql, params)]
+
+
+def save_score(conn: sqlite3.Connection, score: Score) -> None:
+    with conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO scores (job_id, score, reason, model, cv_hash, scored_at)"
+            " VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                score.job_id,
+                score.score,
+                score.reason,
+                score.model,
+                score.cv_hash,
+                score.scored_at.isoformat(),
+            ),
+        )
+
+
+def get_scores(conn: sqlite3.Connection) -> dict[str, Score]:
+    """job_id -> Score for every scored job."""
+    return {
+        r["job_id"]: Score(
+            r["job_id"],
+            r["score"],
+            r["reason"],
+            r["model"],
+            r["cv_hash"],
+            datetime.fromisoformat(r["scored_at"]),
+        )
+        for r in conn.execute("SELECT * FROM scores")
+    }

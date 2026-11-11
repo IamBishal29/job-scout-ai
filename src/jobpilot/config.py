@@ -33,6 +33,9 @@ class Config:
     db_path: Path
     boards: dict[str, tuple[str, ...]] = field(default_factory=dict)
     llm_model: str = DEFAULT_LLM_MODEL
+    llm_requests_per_minute: int = 10
+    cv_path: Path = Path("cv.md")
+    based_in: str = ""
 
 
 def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
@@ -67,6 +70,9 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
             for name in BOARD_SOURCES
         },
         llm_model=str(data.get("llm", {}).get("model") or DEFAULT_LLM_MODEL),
+        llm_requests_per_minute=int(data.get("llm", {}).get("requests_per_minute", 10)),
+        cv_path=Path(data.get("llm", {}).get("cv_path", "cv.md")),
+        based_in=str(data.get("profile", {}).get("based_in", "")),
         db_path=Path(data.get("database", {}).get("path", "data/jobpilot.db")),
     )
 
