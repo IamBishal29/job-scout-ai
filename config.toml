@@ -29,3 +29,7 @@ lever = ["toptal"]
 
 [database]
 path = "data/jobpilot.db"
+
+[llm]
+# Gemini model id. The free tier has small per-model quotas; see Google AI Studio for yours.
+model = "gemini-flash-latest"

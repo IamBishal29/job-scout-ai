@@ -8,6 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 DEFAULT_CONFIG_PATH = Path("config.toml")
+DEFAULT_LLM_MODEL = "gemini-flash-latest"  # Google alias for the current Flash model
 KNOWN_SOURCES = frozenset(
     {"remotive", "remoteok", "arbeitnow", "weworkremotely", "greenhouse", "lever"}
 )
@@ -31,6 +32,7 @@ class Config:
     sources: tuple[str, ...]
     db_path: Path
     boards: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    llm_model: str = DEFAULT_LLM_MODEL
 
 
 def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
@@ -64,6 +66,7 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
             name: tuple(_string_list(data.get("boards", {}), name, "boards", optional=True))
             for name in BOARD_SOURCES
         },
+        llm_model=str(data.get("llm", {}).get("model") or DEFAULT_LLM_MODEL),
         db_path=Path(data.get("database", {}).get("path", "data/jobpilot.db")),
     )
 
