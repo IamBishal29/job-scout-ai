@@ -5,3 +5,8 @@
 __pycache__/
 .venv/
 *.db
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+data/
+cv.md
