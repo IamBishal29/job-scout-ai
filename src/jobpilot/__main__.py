@@ -5,13 +5,10 @@ import logging
 import sys
 from collections.abc import Sequence
 
-from jobpilot import __version__, db, llm, mailer, matcher
-from jobpilot.config import DEFAULT_CONFIG_PATH, Config, ConfigError, get_secret, load_config
-from jobpilot.db import connect, init_db
-from jobpilot.digest import build_digest
+from jobpilot import __version__, actions, llm
+from jobpilot.config import DEFAULT_CONFIG_PATH, Config, ConfigError, load_config
 from jobpilot.models import utc_now
-from jobpilot.pipeline import SourceResult, run_fetch
-from jobpilot.sources.http import make_client
+from jobpilot.pipeline import SourceResult
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -54,13 +51,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def fetch(config: Config) -> int:
-    conn = connect(config.db_path)
-    try:
-        init_db(conn)
-        with make_client() as client:
-            results = run_fetch(conn, config, client)
-    finally:
-        conn.close()
+    results = actions.fetch_jobs(config)
     print(format_results(results))
     return 1 if all(r.error for r in results) else 0
 
@@ -101,20 +92,10 @@ def llm_check(config: Config) -> int:
 def score(config: Config, limit: int) -> int:
     """Score up to `limit` new jobs against the CV. Already-scored jobs are skipped (cached)."""
     try:
-        cv_text = config.cv_path.read_text(encoding="utf-8")
-        client = llm.make_llm_client(config)
-    except FileNotFoundError:
-        print(f"CV not found at {config.cv_path}. Save your CV there as text.", file=sys.stderr)
+        run = actions.score_jobs(config, limit)
+    except actions.ActionError as e:
+        print(e, file=sys.stderr)
         return 2
-    except ConfigError as e:
-        print(f"Config error: {e}", file=sys.stderr)
-        return 2
-    conn = connect(config.db_path)
-    try:
-        init_db(conn)
-        run = matcher.score_jobs(conn, client, cv_text, config, limit, config.llm_model)
-    finally:
-        conn.close()
     print(f"Scored {run.scored} job(s), {run.failed} failed (failed ones retry next run).")
     return 1 if run.failed and not run.scored else 0
 
@@ -132,33 +113,22 @@ def format_results(results: list[SourceResult]) -> str:
 
 
 def digest(config: Config, dry_run: bool) -> int:
-    """Build -> send -> mark. Marking only after a successful send makes reruns safe."""
-    conn = connect(config.db_path)
+    """Build -> send -> mark (see actions.send_digest). --dry-run only builds and prints."""
     try:
-        init_db(conn)
-        items = db.digest_candidates(conn, config.digest_min_score, config.digest_top_n)
-        built = build_digest(items, utc_now(), db.last_digest_at(conn))
-        if built is None:
-            print(f"Nothing new scored {config.digest_min_score}+ since the last digest.")
-            return 0
-        if dry_run:
-            print("DRY RUN (nothing sent, nothing marked)")
-            print(f"Subject: {built.subject}")
-            print()
-            print(built.text)
-            return 0
-        try:
-            sender = get_secret("SMTP_USER")
-            message = mailer.build_message(built, sender, get_secret("DIGEST_TO"))
-            mailer.send_message(message, sender, get_secret("SMTP_APP_PASSWORD"))
-        except (ConfigError, mailer.MailError) as e:
-            print(f"Digest not sent: {e}", file=sys.stderr)
-            return 1
-        db.mark_digested(conn, built.job_ids, utc_now())
+        built = actions.preview_digest(config) if dry_run else actions.send_digest(config)
+    except actions.ActionError as e:
+        print(e, file=sys.stderr)
+        return 1
+    if built is None:
+        print(f"Nothing new scored {config.digest_min_score}+ since the last digest.")
+    elif dry_run:
+        print("DRY RUN (nothing sent, nothing marked)")
+        print(f"Subject: {built.subject}")
+        print()
+        print(built.text)
+    else:
         print(f"Sent digest with {len(built.job_ids)} job(s): {built.subject}")
-        return 0
-    finally:
-        conn.close()
+    return 0
 
 
 if __name__ == "__main__":

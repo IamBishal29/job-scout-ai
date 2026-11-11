@@ -161,7 +161,7 @@ def test_app_saves_status_and_shows_it_in_tracker(tmp_path, monkeypatch):
 
     at = run_app(tmp_path, monkeypatch, JOBS)
 
-    assert "Nothing tracked yet" in at.info[-1].value
+    assert any("Nothing tracked yet" in i.value for i in at.info)
 
     at.session_state["selected_job_id"] = "a:1"
 

@@ -13,6 +13,7 @@ from jobpilot import cover_letter, db, llm
 from jobpilot.config import ConfigError, load_config
 from jobpilot.models import Job, Status, utc_now
 from jobpilot.tracker import change_status, next_statuses, update_notes
+from jobpilot.ui_run import render_run
 from jobpilot.ui_settings import render_settings
 from jobpilot.views import (
     JobFilter,
@@ -117,7 +118,7 @@ def show_cover_letter(job: Job) -> None:
         st.code(body, language=None, wrap_lines=True)  # has a copy button
 
 
-jobs_tab, tracker_tab, settings_tab = st.tabs(["Jobs", "Tracker", "Settings"])
+jobs_tab, tracker_tab, run_tab, settings_tab = st.tabs(["Jobs", "Tracker", "Run", "Settings"])
 
 with jobs_tab:
     if not jobs:  # first run: still show the tabs so Settings is reachable
@@ -193,6 +194,9 @@ with tracker_tab:
             )
 
 conn.close()
+
+with run_tab:
+    render_run(config)
 
 with settings_tab:
     render_settings(config)
