@@ -1,0 +1,28 @@
+{
+  "job-count": 3,
+  "jobs": [
+    {
+      "id": 101,
+      "url": "https://remotive.com/remote-jobs/software-dev/senior-dotnet-developer-101",
+      "title": " Senior .NET Developer ",
+      "company_name": "Acme",
+      "candidate_required_location": "Worldwide",
+      "publication_date": "2026-11-08T21:47:58",
+      "description": "<p>Build APIs with <b>ASP.NET Core</b> &amp; C#.</p><ul><li>Remote</li></ul>"
+    },
+    {
+      "id": 102,
+      "url": "https://remotive.com/remote-jobs/software-dev/llm-engineer-102",
+      "title": "LLM Engineer",
+      "company_name": "Beta AI",
+      "candidate_required_location": "",
+      "publication_date": "2026-11-09T08:00:00",
+      "description": ""
+    },
+    {
+      "id": 103,
+      "company_name": "Broken Inc",
+      "description": "missing title and url"
+    }
+  ]
+}
