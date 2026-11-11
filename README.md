@@ -13,10 +13,19 @@ pip install -e ".[dev]"
 copy .env.example .env     # then fill in your keys (or use the dashboard's Settings tab)
 ```
 
-## Run
+## Quick start (everything in the browser)
+```powershell
+streamlit run app.py        # opens http://localhost:8501 (this computer only)
+```
+1. **Settings**: paste your Gemini key (Test key), upload your CV, add Gmail (Send test email).
+2. **Run**: Fetch jobs → Score jobs → Preview / Send digest.
+3. **Jobs**: best matches first; open a job, track it, draft a cover letter. You apply yourself.
+
+## Command line (optional)
 ```powershell
 python -m jobpilot fetch    # collect jobs into data/jobpilot.db
-streamlit run app.py        # open the dashboard
+python -m jobpilot score    # score new jobs against your CV
+python -m jobpilot digest   # email the best new matches
 ```
 
 ## Daily run (scheduling)
