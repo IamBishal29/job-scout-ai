@@ -1,7 +1,4 @@
-"""Jobs page: filter, rank and open jobs; track them; draft cover letters.
-
-Moved unchanged from the old single-page app.py (#52); the card redesign comes in #54.
-"""
+"""Jobs page: scannable job cards, filters and sorting, details in a dialog."""
 
 import sqlite3
 from dataclasses import replace
@@ -10,24 +7,34 @@ import streamlit as st
 
 from jobpilot import cover_letter, db, llm
 from jobpilot.config import Config, ConfigError
-from jobpilot.models import Job, Score, utc_now
+from jobpilot.models import Job, Score, Status, utc_now
 from jobpilot.tracker import change_status, next_statuses, update_notes
 from jobpilot.ui_common import open_db
 from jobpilot.views import (
+    SORTS,
     JobFilter,
     filter_jobs,
     md_escape,
-    resolve_selection,
-    sort_by_score,
-    to_rows,
+    paginate,
+    score_badge,
+    sort_jobs,
 )
+
+STATUS_COLOURS = {
+    Status.NEW: "gray",
+    Status.SAVED: "blue",
+    Status.APPLIED: "violet",
+    Status.INTERVIEW: "orange",
+    Status.OFFER: "green",
+    Status.REJECTED: "red",
+}
 
 
 def render_jobs(config: Config) -> None:
     st.title("Jobs")
     with open_db(config) as conn:
         jobs = db.list_jobs(conn)
-        if not jobs:  # first run: point to the next step instead of an empty table
+        if not jobs:  # first run: point to the next step instead of an empty page
             st.info("No jobs yet. Add your settings in Settings, then click Fetch jobs on Home.")
             return
         statuses = db.application_statuses(conn)
@@ -35,55 +42,78 @@ def render_jobs(config: Config) -> None:
 
         with st.sidebar:
             st.header("Filters")
-            sources = st.multiselect("Source", sorted({j.source for j in jobs}))
+            sort_by = st.radio("Sort by", SORTS, horizontal=True)
             keyword = st.text_input("Keyword", placeholder="e.g. .NET, LLM, Azure")
-            location = st.text_input("Location contains", placeholder="e.g. worldwide")
             min_score = st.slider("Min match score", 0, 100, 0, step=5, help="0 shows unscored too")
+            location = st.text_input("Location contains", placeholder="e.g. worldwide")
+            sources = st.multiselect("Source", sorted({j.source for j in jobs}))
 
         job_filter = JobFilter(frozenset(sources), keyword, location, min_score)
-        shown = sort_by_score(filter_jobs(jobs, job_filter, scores), scores)
+        shown = sort_jobs(filter_jobs(jobs, job_filter, scores), scores, sort_by)
+        page_key = f"page_{hash((job_filter, sort_by))}"  # new filters/sort -> back to page 1
+        visible, pages, page = paginate(shown, st.session_state.get(page_key, 1))
         st.caption(
-            f"Showing {len(shown)} of {len(jobs)} jobs ({len(scores)} scored), best match first. "
-            "You always apply yourself on the site."
+            f"{len(shown)} of {len(jobs)} jobs · {len(scores)} scored by AI · "
+            "you always apply yourself on the company's site."
         )
+        if not shown:
+            st.info("No jobs match these filters. Try a lower Min match score or fewer keywords.")
 
-        table_col, detail_col = st.columns([3, 2])
-        with table_col:
-            event = st.dataframe(
-                to_rows(shown, statuses, scores),
-                hide_index=True,
-                column_config={
-                    "Score": st.column_config.ProgressColumn(
-                        "Score", min_value=0, max_value=100, format="%d"
-                    ),
-                    "Why": st.column_config.TextColumn("Why", width="medium"),
-                    "Link": st.column_config.LinkColumn("Link", display_text="Open"),
-                },
-                on_select="rerun",
-                selection_mode="single-row",
-                key=f"jobs_table_{hash(job_filter)}",  # new filters -> fresh table selection
-            )
-        st.session_state.selected_job_id = resolve_selection(
-            [j.id for j in shown],
-            event.selection.rows if event else [],
-            st.session_state.get("selected_job_id"),
+        for job in visible:
+            _job_card(job, scores.get(job.id), statuses.get(job.id, Status.NEW))
+        _pager(page_key, page, pages)
+
+        if job := next((j for j in jobs if j.id == st.session_state.get("details_job")), None):
+            _details_dialog(conn, config, scores, job)
+
+
+def _job_card(job: Job, score: Score | None, status: Status) -> None:
+    with st.container(border=True):
+        badge_col, text_col, button_col = st.columns([2, 8, 2], vertical_alignment="center")
+        label, colour = score_badge(score.score if score else None)
+        badge_col.badge(label, color=colour)
+        if status != Status.NEW:
+            badge_col.badge(status.value.title(), color=STATUS_COLOURS[status])
+        text_col.markdown(
+            f"**{md_escape(job.title)}**  \n{md_escape(job.company)} · {job.location}"
         )
-        with detail_col:
-            selected = next((j for j in shown if j.id == st.session_state.selected_job_id), None)
-            if selected:
-                _show_detail(conn, config, scores, selected)
-            else:
-                st.info("Select a row to see the full job description.")
+        if score:
+            text_col.caption(score.reason)
+        if button_col.button("Details", key=f"details_{job.id}", width="stretch"):
+            st.session_state.details_job = job.id
+            st.rerun()
+        button_col.link_button("Open posting", job.url, width="stretch")
 
 
-def _show_detail(conn: sqlite3.Connection, config: Config, scores: dict[str, Score], job: Job):
+def _pager(key: str, page: int, pages: int) -> None:
+    if pages == 1:
+        return
+    prev_col, info_col, next_col = st.columns([1, 2, 1], vertical_alignment="center")
+    if prev_col.button("Previous", disabled=page == 1, width="stretch"):
+        st.session_state[key] = page - 1
+        st.rerun()
+    info_col.markdown(
+        f"<p style='text-align:center'>Page {page} of {pages}</p>", unsafe_allow_html=True
+    )
+    if next_col.button("Next", disabled=page == pages, width="stretch"):
+        st.session_state[key] = page + 1
+        st.rerun()
+
+
+def _close_details() -> None:
+    st.session_state.details_job = None
+
+
+@st.dialog("Job details", width="large", on_dismiss=_close_details)
+def _details_dialog(conn: sqlite3.Connection, config: Config, scores: dict[str, Score], job: Job):
     st.subheader(job.title)
     posted = job.posted_at.date().isoformat() if job.posted_at else "unknown date"
     st.caption(f"{job.company} · {job.location} · {job.source} · posted {posted}")
-    st.link_button("Open job posting", job.url)  # opens the site; you apply there yourself
+    st.link_button("Open job posting", job.url, type="primary")  # you apply there yourself
 
     if score := scores.get(job.id):
-        st.metric("Match", f"{score.score}/100")
+        label, colour = score_badge(score.score)
+        st.badge(f"Match {label}", color=colour)
         st.write(score.reason)
         st.caption(f"AI estimate by {score.model} on {score.scored_at.date()}. Use your judgement.")
     else:
@@ -99,11 +129,11 @@ def _show_detail(conn: sqlite3.Connection, config: Config, scores: dict[str, Sco
             updated = update_notes(change_status(app, new_status), notes)
             db.save_application(conn, updated)
             st.session_state.flash = f"Saved: {job.title} is now '{updated.status}'."
-            st.rerun()  # redraw so the table and tracker show the new status
+            st.rerun()  # redraw cards; the dialog reopens with the new status
 
     _show_cover_letter(conn, config, job)
 
-    with st.container(height=400):
+    with st.expander("Job description", expanded=True), st.container(height=350):
         st.markdown(md_escape(job.description) or "_No description provided._")
 
 
