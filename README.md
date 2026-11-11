@@ -35,7 +35,7 @@ Gmail.
 | **Filters and removes duplicates** | Keeps jobs matching your roles and locations, drops region-locked roles ("US only"), and stores the same job from two sites only once. |
 | **AI match score** | Gemini rates every job 0–100 against your CV, with a one-line reason. It knows where you're based, so jobs you can't take score low. |
 | **Dashboard** | Best matches first, filters (source, keyword, location, minimum score), full job details, a link to apply. |
-| **Application tracker** | Status per job (Saved → Applied → Interview → Offer / Rejected), notes and dates, grouped in a Tracker tab. |
+| **Application tracker** | Status per job (Saved → Applied → Interview → Offer / Rejected), notes and dates, on the Tracker page. |
 | **Cover letter drafts** | One click writes a draft from your CV only, flags `[placeholders]` to fill and any numbers not in your CV. You edit and send it. |
 | **Daily email digest** | Your top new matches by email. Never the same job twice. |
 | **Runs every morning** | Windows Task Scheduler runs fetch → score → email for you. |
@@ -89,9 +89,9 @@ Your browser opens **http://localhost:8501**. To stop the app, press **Ctrl+C** 
 
 ## First run: set up in the browser
 
-The app has four tabs: **Jobs**, **Tracker**, **Run** and **Settings**. Start with **Settings**.
+Use the **menu on the left**: **Home**, **Jobs**, **Tracker** and **Settings**. Start with **Settings**.
 
-### 1. Settings tab
+### 1. Settings
 1. **Gemini API key**
    - Go to **https://aistudio.google.com** → **Get API key** → create a key (free, no card).
    - Paste it, click **Save key**, then **Test key**. You should see *"It works."*
@@ -105,26 +105,26 @@ The app has four tabs: **Jobs**, **Tracker**, **Run** and **Settings**. Start wi
    - Enter your Gmail address, the app password and where to send the digest. Click
      **Save Gmail settings**, then **Send test email**.
 
-### 2. Run tab
+### 2. Home
 1. **Fetch jobs**: about a minute.
 2. **Score jobs**: start with 20. Each job takes about 6 seconds (free-tier speed limit), with a
    progress bar.
 3. **Preview digest** shows the email. **Send digest** sends it.
 
-### 3. Jobs tab
+### 3. Jobs
 - The best matches are at the top, each with a **Score** bar and a **Why** reason.
 - Use the sidebar to filter: keyword (e.g. `.NET`, `LLM`), source, location, **Min match score**.
 - **Click a row** to see:
   - **Match** score and reason
   - **Open job posting**: apply on the company's site
-  - **Status** + **Notes** → **Save** (it appears in the **Tracker** tab)
+  - **Status** + **Notes** → **Save** (it appears on the **Tracker** page)
   - **Cover letter draft** → **Generate draft** → edit → **Save edits** → copy it from the box
 
 ---
 
 ## Everyday use
 1. Open the app: `.venv\Scripts\streamlit run app.py`.
-2. **Run** → **Fetch jobs** → **Score jobs** (or let the scheduler do it, below).
+2. **Home** → **Fetch jobs** → **Score jobs** (or let the scheduler do it, below).
 3. **Jobs** → set **Min match score** to around 60 → review the top matches.
 4. Interesting? Set the status to **Saved**, draft a cover letter, open the posting and apply, then set
    **Applied**.
@@ -178,7 +178,7 @@ read-only, and never scrapes their sites.
 3. Create a Gmail filter: from `jobalerts-noreply@linkedin.com` OR `alert@indeed.com` → **Apply label**
    `JobAlerts`.
 4. In `config.toml`, add `"alerts"` to `[sources] enabled`.
-5. **Run → Fetch jobs.** Alert jobs appear with source `alerts`.
+5. **Home → Fetch jobs.** Alert jobs appear with source `alerts`.
 
 It uses the same Gmail app password as the digest. The parser was built from sample emails, so if
 company or location come out wrong, open an issue with an example.
@@ -187,7 +187,7 @@ company or location come out wrong, open an issue with an example.
 
 ## Command line (optional)
 
-Everything in the **Run** tab also works from PowerShell:
+Everything on the **Home** page's action buttons also works from PowerShell:
 
 | Command | What it does |
 |---|---|
@@ -227,7 +227,7 @@ Run these from the project folder with the virtual environment active, or use
 | *"App password should be 16 letters"* | You pasted your normal Gmail password. Create an app password (Settings → Gmail → how-to). |
 | Test email not arriving | Check spam. Make sure 2-Step Verification is on. Create a new app password. |
 | *"Almost no text found"* when uploading a CV | It's a scanned PDF. Export a text-based PDF, or upload a `.txt`. |
-| Score / Why columns are empty | Run **Run → Score jobs**. It scores up to the batch size each time. |
+| Score / Why columns are empty | Click **Home → Score jobs**. It scores up to the batch size each time. |
 | Few or no jobs | Widen `role_keywords` / `locations` in `config.toml`, then **Fetch jobs** again. |
 | Digest says "Nothing new" | No new jobs scored at or above `[digest] min_score` (60) since the last email. |
 | Page won't open | Make sure `streamlit run app.py` is still running, and open http://localhost:8501. |
@@ -244,7 +244,8 @@ ruff format --check .       # formatting
 
 | Path | What's there |
 |---|---|
-| `app.py` | Streamlit dashboard (Jobs, Tracker, Run, Settings tabs) |
+| `app.py` | Streamlit entry point: theme and sidebar menu |
+| `app_pages/` | Home, Jobs, Tracker, Settings pages (thin; call `src/jobpilot/ui_*.py`) |
 | `src/jobpilot/sources/` | One fetcher per job source |
 | `src/jobpilot/actions.py` | Fetch / score / digest, shared by the CLI and the UI |
 | `src/jobpilot/matcher.py`, `cover_letter.py` | AI scoring and cover letters |
