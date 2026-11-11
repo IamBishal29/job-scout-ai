@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M3 AI Matching (M1, M2 done)
-- Issue: #13 Scores in dashboard (PR open)
-- Branch: feat/13-scores-in-dashboard
-- Next step: Syed merges #13 PR; adds .env key + cv.md, runs `llm-check` then `score`; then /next-task (#14 Cover letter draft)
+- Issue: #14 Cover letter draft (PR open)
+- Branch: feat/14-cover-letter-draft
+- Next step: Syed merges #14 PR (M3 complete); adds .env key + cv.md and tries score + a draft live; then /next-task (#15 Digest builder, M4)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -21,7 +21,8 @@
 - #10 tracker: applications table, PRAGMA user_version migrations, status state machine, Tracker tab (ADR 0002) - merged
 - #11 llm.py: LlmClient Protocol, GeminiClient (httpx REST, key in header, 429/5xx backoff), FakeLlmClient, llm-check CLI - merged
 - #12 matcher.py + scores table (migration v3) + `score --limit` CLI; prompt includes based_in (Dhaka); real DB at v3, 114 unscored - merged
-- #13 dashboard: Score progress column + Why, best-first sort (unscored last), min-score slider, Match metric in detail
+- #13 dashboard: Score progress column + Why, best-first sort (unscored last), min-score slider, Match metric in detail - merged
+- #14 cover_letter.py (grounded template, placeholders + unsupported-number checks), cover_letters table (migration v4), draft UI with copy; real DB at v4
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -48,3 +49,4 @@
 - 2026-11-11: #11 implemented, PR opened; live Gemini call pending Syed's key
 - 2026-11-11: #12 implemented, PR opened; live scoring pending key + cv.md
 - 2026-11-11: #13 implemented, PR opened
+- 2026-11-11: #14 implemented, PR opened; M3 features all built, live LLM run still pending key + CV
