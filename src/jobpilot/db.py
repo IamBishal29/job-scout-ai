@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 
-from jobpilot.models import Application, Job, Score, Status
+from jobpilot.models import Application, CoverLetter, Job, Score, Status
 
 DEFAULT_DB_PATH = Path("data") / "jobpilot.db"
 
@@ -48,6 +48,16 @@ MIGRATIONS = (
         model     TEXT NOT NULL,
         cv_hash   TEXT NOT NULL,
         scored_at TEXT NOT NULL
+    );
+    """,
+    """
+    CREATE TABLE cover_letters (
+        job_id       TEXT PRIMARY KEY REFERENCES jobs (id),
+        body         TEXT NOT NULL,
+        model        TEXT NOT NULL,
+        cv_hash      TEXT NOT NULL,
+        generated_at TEXT NOT NULL,
+        updated_at   TEXT NOT NULL
     );
     """,
 )
@@ -241,3 +251,34 @@ def get_scores(conn: sqlite3.Connection) -> dict[str, Score]:
         )
         for r in conn.execute("SELECT * FROM scores")
     }
+
+
+def get_cover_letter(conn: sqlite3.Connection, job_id: str) -> CoverLetter | None:
+    r = conn.execute("SELECT * FROM cover_letters WHERE job_id = ?", (job_id,)).fetchone()
+    if r is None:
+        return None
+    return CoverLetter(
+        r["job_id"],
+        r["body"],
+        r["model"],
+        r["cv_hash"],
+        datetime.fromisoformat(r["generated_at"]),
+        datetime.fromisoformat(r["updated_at"]),
+    )
+
+
+def save_cover_letter(conn: sqlite3.Connection, letter: CoverLetter) -> None:
+    """Insert or replace the draft for letter.job_id (one draft per job)."""
+    with conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO cover_letters"
+            " (job_id, body, model, cv_hash, generated_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                letter.job_id,
+                letter.body,
+                letter.model,
+                letter.cv_hash,
+                letter.generated_at.isoformat(),
+                letter.updated_at.isoformat(),
+            ),
+        )
