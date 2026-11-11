@@ -4,3 +4,13 @@ gatherUsageStats = false
 [server]
 # Only this computer can open the dashboard: the Settings tab can save secrets.
 address = "localhost"
+
+[theme]
+# Clean light look with one accent colour (indigo). Users can still pick dark mode
+# from the app's menu (top right).
+base = "light"
+primaryColor = "#4F46E5"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F6FB"
+textColor = "#1F2937"
+font = "sans serif"

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from conftest import open_page
 from streamlit.testing.v1 import AppTest
 
 from jobpilot import db, llm
@@ -65,7 +66,7 @@ def app(tmp_path, monkeypatch):
     monkeypatch.setattr(llm, "make_llm_client", lambda c: FakeLlmClient([DRAFT]))
     at = AppTest.from_file(APP, default_timeout=30)
     at.session_state["selected_job_id"] = "a:1"
-    return at.run(), tmp_path / "j.db"
+    return open_page(at.run(), "jobs"), tmp_path / "j.db"
 
 
 def test_generate_save_edit_and_warnings_in_app(app):

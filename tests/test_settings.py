@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import pytest
+from conftest import open_page
 from streamlit.testing.v1 import AppTest
 
 from jobpilot import llm, mailer
@@ -66,12 +67,13 @@ def app(tmp_path, clean_env):
     clean_env.setenv("JOBPILOT_CONFIG", str(cfg))
     clean_env.setenv("JOBPILOT_ENV", str(tmp_path / ".env"))
     clean_env.setattr(llm, "make_llm_client", lambda c: FakeLlmClient(["JobPilot OK"]))
-    return AppTest.from_file(APP, default_timeout=30).run(), tmp_path / ".env"
+    return open_page(
+        AppTest.from_file(APP, default_timeout=30).run(), "settings"
+    ), tmp_path / ".env"
 
 
 def test_settings_tab_reachable_on_first_run_and_saves_key(app):
     at, env = app
-    assert "No jobs yet" in at.info[0].value  # empty DB no longer hides the other tabs
     assert "Status: **not set**" in [m.value for m in at.markdown]
 
     [box] = [t for t in at.text_input if t.label == "New API key"]
@@ -151,7 +153,7 @@ def test_saved_values_show_after_restart(tmp_path, clean_env):
     )
     clean_env.setenv("JOBPILOT_CONFIG", str(cfg))
     clean_env.setenv("JOBPILOT_ENV", str(env))
-    at = AppTest.from_file(APP, default_timeout=30).run()
+    at = open_page(AppTest.from_file(APP, default_timeout=30).run(), "settings")
     assert "Status: **set (ends with abcd)**" in [m.value for m in at.markdown]
     assert [t.value for t in at.text_input if t.label == "Your Gmail address"] == ["me@gmail.com"]
 

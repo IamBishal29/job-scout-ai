@@ -21,3 +21,9 @@ def mock_client(status: int, payload, seen: list[httpx.Request] | None = None) -
         return httpx.Response(status, json=payload)
 
     return httpx.Client(transport=httpx.MockTransport(handler), headers=make_client().headers)
+
+
+def open_page(at, page: str):
+    """Switch an AppTest to one of the app's pages (home, jobs, tracker, settings) and run it."""
+    at.switch_page(f"app_pages/{page}.py")
+    return at.run()
