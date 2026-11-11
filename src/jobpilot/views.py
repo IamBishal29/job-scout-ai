@@ -83,3 +83,48 @@ _MD_SPECIAL = str.maketrans({c: "\\" + c for c in "\\`*_{}[]<>()#+-.!|$~"})
 def md_escape(text: str) -> str:
     """Show text literally in st.markdown: escape Markdown symbols, keep line breaks."""
     return text.translate(_MD_SPECIAL).replace("\n", "  \n")
+
+
+STRONG_MATCH = 75  # score at/above which a job counts as a strong match
+APPLIED_STAGES = frozenset({Status.APPLIED, Status.INTERVIEW, Status.OFFER})
+
+
+@dataclass(frozen=True, slots=True)
+class Stats:
+    jobs: int
+    scored: int
+    strong: int
+    applications: int
+    interviews: int
+
+
+def summarize(job_count: int, scores: Mapping[str, Score], statuses: Mapping[str, Status]) -> Stats:
+    """The Home page numbers. Pure: easy to test, no database or UI."""
+    return Stats(
+        jobs=job_count,
+        scored=len(scores),
+        strong=sum(s.score >= STRONG_MATCH for s in scores.values()),
+        applications=sum(st in APPLIED_STAGES for st in statuses.values()),
+        interviews=sum(st in (Status.INTERVIEW, Status.OFFER) for st in statuses.values()),
+    )
+
+
+def top_matches(
+    jobs: Iterable[Job],
+    scores: Mapping[str, Score],
+    statuses: Mapping[str, Status],
+    n: int = 5,
+) -> list[tuple[Job, Score]]:
+    """Best scored jobs you haven't rejected yet, highest first."""
+    candidates = [
+        (job, scores[job.id])
+        for job in jobs
+        if job.id in scores and statuses.get(job.id) != Status.REJECTED
+    ]
+    return sorted(candidates, key=lambda pair: -pair[1].score)[:n]
+
+
+def greeting(hour: int) -> str:
+    if hour < 12:
+        return "Good morning"
+    return "Good afternoon" if hour < 18 else "Good evening"
