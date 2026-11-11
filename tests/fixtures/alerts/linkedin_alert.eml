@@ -1,0 +1,41 @@
+From: LinkedIn Job Alerts <jobalerts-noreply@linkedin.com>
+To: Test User <test.user@example.com>
+Subject: "senior .net developer": 3 new jobs
+Date: Tue, 10 Nov 2026 06:12:00 +0000
+X-JobPilot-Fixture: synthetic (approximates a LinkedIn alert; not a real email)
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset="utf-8"
+
+Your job alert for senior .net developer
+Senior .NET Developer - Acme Cloud - Remote
+View job: https://www.linkedin.com/comm/jobs/view/4012345678/?trackingId=abc
+
+--b1
+Content-Type: text/html; charset="utf-8"
+
+<html><body>
+<table><tr><td>
+  <a href="https://www.linkedin.com/comm/jobs/view/4012345678/?trackingId=abc%3D%3D&amp;refId=x"><img src="https://media.licdn.com/logo1.png" alt="Acme Cloud"></a>
+  <a href="https://www.linkedin.com/comm/jobs/view/4012345678/?trackingId=abc%3D%3D&amp;refId=x">Senior .NET Developer</a>
+  <p>Acme Cloud &middot; Dhaka, Bangladesh (Remote)</p>
+  <p>Actively recruiting</p>
+</td></tr>
+<tr><td>
+  <a href="https://www.linkedin.com/comm/jobs/view/4023456789/?trackingId=def">AI Engineer (LLM Applications)</a>
+  <p>Beta Labs &middot; Asia Pacific (Remote)</p>
+</td></tr>
+<tr><td>
+  <a href="https://www.linkedin.com/comm/jobs/view/4034567890/?trackingId=ghi">Solutions Architect &amp; Team Lead</a>
+  <p>Gamma Systems</p>
+  <p>Singapore</p>
+</td></tr>
+<tr><td>
+  <a href="https://www.linkedin.com/comm/jobs/search/?keywords=senior%20.net">See all jobs</a>
+  <a href="https://www.linkedin.com/comm/psettings/job-alerts">Manage alerts</a>
+</td></tr>
+</table>
+</body></html>
+--b1--

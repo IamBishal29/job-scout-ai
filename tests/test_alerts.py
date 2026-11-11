@@ -96,3 +96,41 @@ def test_trusted_location_skips_location_but_not_role_check(tmp_path):
     [result] = run_fetch(conn, cfg, httpx.Client(), {"alerts": trusted})
     assert (result.fetched, result.matched, result.new) == (2, 1, 1)
     conn.close()
+
+
+FIXTURES = Path(__file__).parent / "fixtures" / "alerts"
+
+
+def load_eml(name: str) -> EmailMessage:
+    import email
+    from email.policy import default
+
+    return email.message_from_bytes((FIXTURES / name).read_bytes(), policy=default)
+
+
+def test_parse_linkedin_alert_fixture():
+    jobs = parse_alert(load_eml("linkedin_alert.eml"))
+    assert [(j.title, j.company, j.location) for j in jobs] == [
+        ("Senior .NET Developer", "Acme Cloud", "Dhaka, Bangladesh (Remote)"),
+        ("AI Engineer (LLM Applications)", "Beta Labs", "Asia Pacific (Remote)"),
+        ("Solutions Architect & Team Lead", "Gamma Systems", "Singapore"),
+    ]  # logo link (no text) and "See all jobs" / "Manage alerts" links are ignored
+    assert jobs[0].id == "alerts:linkedin:4012345678"
+    assert jobs[0].url == "https://www.linkedin.com/jobs/view/4012345678/"  # tracking dropped
+    assert jobs[0].posted_at.isoformat() == "2026-11-10T06:12:00+00:00"
+
+
+def test_parse_indeed_alert_fixture():
+    jobs = parse_alert(load_eml("indeed_alert.eml"))
+    assert [(j.id, j.company, j.location) for j in jobs] == [
+        ("alerts:indeed:a1b2c3d4e5f60718", "Delta Software", "Remote"),
+        ("alerts:indeed:0f1e2d3c4b5a6978", "Epsilon Tech Ltd", "Dhaka"),
+    ]
+    assert jobs[1].url == "https://www.indeed.com/viewjob?jk=0f1e2d3c4b5a6978"
+
+
+def test_text_only_alert_yields_nothing():
+    msg = EmailMessage()
+    msg["From"] = "jobalerts-noreply@linkedin.com"
+    msg.set_content("plain text only")
+    assert parse_alert(msg) == []

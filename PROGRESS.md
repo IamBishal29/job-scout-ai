@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M5 More Sources (MVP M1-M4 done)
-- Issue: #18 LinkedIn/Indeed alert email parser (IN PROGRESS, waiting for samples)
+- Issue: #18 LinkedIn/Indeed alert email parser (PR open)
 - Branch: feat/18-alert-email-parser
-- Next step: Syed saves 1 LinkedIn + 1 Indeed alert as .eml into samples/ (git-ignored); then /next-task resumes: build parse_linkedin/parse_indeed from samples, anonymized fixtures, docs, PR
+- Next step: Syed merges #18 PR; optionally verifies parser on a real alert (.eml in samples/); then /next-task (#19 Bdjobs polite scraper)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -26,9 +26,10 @@
 - #15 digest.py (HTML + text, escaped), digested_jobs log (migration v5), [digest] top_n/min_score; real DB at v5 - merged
 - #16 mailer.py (STARTTLS, app password, multipart) + `digest [--dry-run]` CLI; build -> send -> mark - merged
 - #17 `python -m jobpilot daily` (fetch->score->digest, keeps going, exit code), scripts/daily.ps1 + register-task.ps1, README scheduling - merged (MVP complete)
-- #18 (partial, pushed): IMAP read-only reader, AlertEmailSource, TRUSTED_LOCATION filter, [alerts] config
+- #18 alerts.py: read-only IMAP (BODY.PEEK), link-based LinkedIn/Indeed parsers (synthetic fixtures, Syed's choice), TRUSTED_LOCATION, [alerts] config; source disabled by default
 
 ## Decisions waiting for Syed
+- #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
 - Company board list is a default (gitlab, canonical, grafanalabs, toptal); edit [boards] in config.toml
 - Keyword filter is coarse (e.g. 'Team Lead Account Executive' matched); tune config.toml or rely on M3 scoring
@@ -59,3 +60,4 @@
 - 2026-11-11: #16 implemented, PR opened; caught + tested a misplaced __main__ guard
 - 2026-11-11: #17 implemented, PR opened; PowerShell run of daily.ps1 left to Syed
 - 2026-11-11: #18 started; IMAP part pushed, parsers wait for Syed's sample .eml files
+- 2026-11-11: #18 finished with synthetic samples at Syed's request, PR opened
