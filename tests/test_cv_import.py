@@ -2,6 +2,7 @@ import io
 from pathlib import Path
 
 import pytest
+from conftest import open_page
 from pypdf import PdfReader, PdfWriter
 from streamlit.testing.v1 import AppTest
 
@@ -112,7 +113,7 @@ def test_upload_edit_and_save_in_settings(tmp_path, monkeypatch):
     )
     monkeypatch.setenv("JOBPILOT_CONFIG", str(cfg))
     monkeypatch.setenv("JOBPILOT_ENV", str(tmp_path / ".env"))
-    at = AppTest.from_file(APP, default_timeout=30).run()
+    at = open_page(AppTest.from_file(APP, default_timeout=30).run(), "settings")
     assert any("Status: **not set**. Scoring" in m.value for m in at.markdown)
 
     at.file_uploader[0].upload("cv.pdf", make_pdf(LINES), "application/pdf").run()

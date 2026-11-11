@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from conftest import open_page
 from streamlit.testing.v1 import AppTest
 
 from jobpilot.db import connect, init_db, insert_jobs, save_score
@@ -67,51 +68,36 @@ def test_to_rows_formats_date_and_keeps_link():
     ]
 
 
-def run_app(tmp_path, monkeypatch, jobs):
-
+def run_app(tmp_path, monkeypatch, jobs, page="jobs"):
+    """Start the app on a temp DB/config and open `page` (default: the Jobs page)."""
     db = tmp_path / "jobs.db"
-
     conn = connect(db)
-
     init_db(conn)
-
     insert_jobs(conn, jobs)
-
     conn.close()
-
     cfg = tmp_path / "config.toml"
-
     cfg.write_text(
         '[search]\nrole_keywords=["x"]\nlocations=["remote"]\n'
         f'[sources]\nenabled=["remotive"]\n[database]\npath="{db.as_posix()}"\n',
         encoding="utf-8",
     )
-
     monkeypatch.setenv("JOBPILOT_CONFIG", str(cfg))
-
-    return AppTest.from_file(APP, default_timeout=30).run()
+    return open_page(AppTest.from_file(APP, default_timeout=30).run(), page)
 
 
 def test_app_shows_jobs_and_filters(tmp_path, monkeypatch):
-
     at = run_app(tmp_path, monkeypatch, JOBS)
-
     assert not at.exception
-
     assert len(at.dataframe[0].value) == 3
 
     at.sidebar.text_input[0].input("llm").run()  # keyword box
-
     assert list(at.dataframe[0].value["Title"]) == ["LLM Engineer"]
 
 
 def test_app_with_empty_db_shows_hint(tmp_path, monkeypatch):
-
     at = run_app(tmp_path, monkeypatch, [])
-
     assert not at.exception
-
-    assert "python -m jobpilot fetch" in at.info[0].value
+    assert "Fetch jobs on Home" in at.info[0].value
 
 
 @pytest.mark.parametrize(
@@ -125,63 +111,47 @@ def test_app_with_empty_db_shows_hint(tmp_path, monkeypatch):
     ],
 )
 def test_resolve_selection(rows, previous, expected):
-
     assert resolve_selection(["a:1", "b:2", "c:3"], rows, previous) == expected
 
 
 def test_md_escape_shows_text_literally():
-
     assert md_escape("# C# *fast*\nline 2") == r"\# C\# \*fast\*" + "  \nline 2"
 
 
 def test_app_shows_detail_for_selected_job(tmp_path, monkeypatch):
-
     db_jobs = [*JOBS[:1], Job("d:4", "s", "Tech Lead", "Zeta", "Remote", "https://d/4", "# Perks")]
-
     at = run_app(tmp_path, monkeypatch, db_jobs)
-
     assert "Select a row" in at.info[0].value  # nothing selected yet
 
     at.session_state["selected_job_id"] = "d:4"
-
     at.run()
-
     assert at.subheader[0].value == "Tech Lead"
-
-    assert "Zeta" in at.caption[1].value
-
+    assert any("Zeta" in c.value for c in at.caption)
     assert r"\# Perks" in [m.value for m in at.markdown]  # rendered literally, not as a heading
 
     at.sidebar.text_input[0].input(".net").run()  # filter hides the selected job
-
     assert "Tech Lead" not in [h.value for h in at.subheader]
 
 
 def test_app_saves_status_and_shows_it_in_tracker(tmp_path, monkeypatch):
-
-    at = run_app(tmp_path, monkeypatch, JOBS)
-
+    at = run_app(tmp_path, monkeypatch, JOBS, page="tracker")
     assert any("Nothing tracked yet" in i.value for i in at.info)
 
+    at = open_page(at, "jobs")
     at.session_state["selected_job_id"] = "a:1"
-
     at.run()
-
     at.selectbox[0].set_value(Status.APPLIED)
-
     at.text_area[0].input("sent CV via site")
-
-    at.button[0].click().run()  # the form's Save button
+    [save] = [b for b in at.button if b.label == "Save"]  # the status form's button
+    save.click().run()
 
     assert not at.exception
-
     assert "is now 'applied'" in at.success[0].value
-
     table = at.dataframe[0].value.set_index("Title")
-
     assert table.loc["Senior .NET Developer", "Status"] == "applied"
 
-    assert "Applied (1)" in [h.value for h in at.subheader]  # tracker tab heading
+    at = open_page(at, "tracker")
+    assert "Applied (1)" in [h.value for h in at.subheader]
 
 
 SCORES = {
@@ -218,7 +188,7 @@ def test_app_sorts_by_score_filters_and_shows_match(tmp_path, monkeypatch):
     at.run()
 
     assert list(at.dataframe[0].value["Title"])[:2] == ["Senior .NET Developer", "LLM Engineer"]
-    assert "(2 scored)" in at.caption[0].value
+    assert any("(2 scored)" in c.value for c in at.caption)
 
     at.sidebar.slider[0].set_value(50).run()
     assert list(at.dataframe[0].value["Title"]) == ["Senior .NET Developer"]

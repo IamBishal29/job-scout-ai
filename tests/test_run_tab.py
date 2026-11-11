@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from conftest import open_page
 from streamlit.testing.v1 import AppTest
 
 from jobpilot import actions, db, llm, mailer
@@ -116,8 +117,9 @@ def test_run_tab_fetch_score_preview_send(setup, monkeypatch):
 
     at = click(at, "Score jobs")
     assert "Scored 1 job(s)." in at.success[0].value
-    table = at.dataframe[0].value.set_index("Title")
-    assert table.loc["Senior .NET Developer", "Score"] == 91  # Jobs tab refreshed
+    table = open_page(at, "jobs").dataframe[0].value.set_index("Title")
+    assert table.loc["Senior .NET Developer", "Score"] == 91  # Jobs page shows the new score
+    at = open_page(at, "home")
 
     at = click(at, "Preview digest")
     assert any("1 new match" in m.value for m in at.markdown)
