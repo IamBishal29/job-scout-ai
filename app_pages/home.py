@@ -1,9 +1,6 @@
-"""Home page. For now: the pipeline actions (the full Home page comes in #53)."""
-
-import streamlit as st
+"""Home page."""
 
 from jobpilot.ui_common import load_app_config
-from jobpilot.ui_run import render_run
+from jobpilot.ui_home import render_home
 
-st.title("Home")
-render_run(load_app_config())
+render_home(load_app_config())

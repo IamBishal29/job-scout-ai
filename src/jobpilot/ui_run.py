@@ -1,4 +1,4 @@
-"""Run tab: fetch, score and digest from the dashboard (same actions as the CLI)."""
+"""Pipeline actions as three cards on Home: fetch, score, digest (same actions as the CLI)."""
 
 import streamlit as st
 
@@ -14,9 +14,19 @@ def render_run(config: Config) -> None:
         kind, text = result
         getattr(st, kind)(text)
 
-    st.subheader("1. Fetch jobs")
-    st.caption("Collects new jobs from all enabled sources. Takes about a minute.")
-    if st.button("Fetch jobs"):
+    fetch_col, score_col, digest_col = st.columns(3)
+    with fetch_col.container(border=True):
+        _fetch_card(config)
+    with score_col.container(border=True):
+        _score_card(config, ready)
+    with digest_col.container(border=True):
+        _digest_card(config, ready)
+
+
+def _fetch_card(config: Config) -> None:
+    st.markdown("**:material/travel_explore: 1 · Find jobs**")
+    st.caption("New jobs from all enabled sources. About a minute.")
+    if st.button("Fetch jobs", type="primary", width="stretch"):
         with st.spinner("Fetching from job boards..."):
             results = actions.fetch_jobs(config)
         new = sum(r.new for r in results)
@@ -24,13 +34,16 @@ def render_run(config: Config) -> None:
         summary = f"{new} new job(s) from {len(results) - len(errors)} source(s)."
         _done("warning" if errors else "success", summary + _lines("Failed", errors))
 
-    st.subheader("2. Score jobs against your CV")
+
+def _score_card(config: Config, ready: actions.Readiness) -> None:
+    st.markdown("**:material/auto_awesome: 2 · Score with AI**")
     missing = [n for n, ok in (("Gemini key", ready.gemini), ("CV", ready.cv)) if not ok]
     if missing:
-        st.info(f"Add your {' and '.join(missing)} in the Settings tab first.")
+        st.caption(f"Add your {' and '.join(missing)} in Settings first.")
+    else:
+        st.caption(f"About {SECONDS_PER_JOB}s per job. Scored jobs are skipped.")
     limit = st.number_input("How many jobs", 1, 100, 20, help="Free tier: keep batches small")
-    st.caption(f"About {SECONDS_PER_JOB}s per job. Already-scored jobs are skipped.")
-    if st.button("Score jobs", disabled=bool(missing)):
+    if st.button("Score jobs", disabled=bool(missing), width="stretch"):
         bar = st.progress(0.0, text="Starting...")
 
         def progress(done: int, total: int) -> None:
@@ -44,18 +57,21 @@ def render_run(config: Config) -> None:
             note = f" {run.failed} failed and will retry next time." if run.failed else ""
             _done("warning" if run.failed else "success", f"Scored {run.scored} job(s).{note}")
 
-    st.subheader("3. Daily digest email")
+
+def _digest_card(config: Config, ready: actions.Readiness) -> None:
+    st.markdown("**:material/mail: 3 · Email digest**")
     if not ready.gmail:
-        st.info("Add your Gmail settings in the Settings tab to send the digest.")
-    preview_col, send_col = st.columns(2)
-    if preview_col.button("Preview digest"):
+        st.caption("Add your Gmail settings in Settings to send it.")
+    else:
+        st.caption(f"Your best new matches ({config.digest_min_score}+), never the same job twice.")
+    if st.button("Preview digest", width="stretch"):
         built = actions.preview_digest(config)
         if built is None:
             st.info(f"Nothing new scored {config.digest_min_score}+ since the last digest.")
         else:
-            st.write(f"**{built.subject}**")
-            st.html(built.html)  # rendered here only; nothing is sent or marked
-    if send_col.button("Send digest", disabled=not ready.gmail):
+            with st.expander(built.subject, expanded=True):
+                st.html(built.html)  # rendered here only; nothing is sent or marked
+    if st.button("Send digest", disabled=not ready.gmail, width="stretch"):
         try:
             with st.spinner("Sending..."):
                 built = actions.send_digest(config)
@@ -73,6 +89,6 @@ def _lines(title: str, items: list[str]) -> str:
 
 
 def _done(kind: str, text: str) -> None:
-    """Remember the outcome and redraw, so the Jobs tab shows the new data immediately."""
+    """Remember the outcome and redraw, so every page shows the new data immediately."""
     st.session_state.run_result = (kind, text)
     st.rerun()

@@ -99,8 +99,8 @@ def test_run_tab_disables_buttons_until_ready(setup):
     at = AppTest.from_file(APP, default_timeout=30).run()
     assert [b.disabled for b in at.button if b.label == "Score jobs"] == [True]
     assert [b.disabled for b in at.button if b.label == "Send digest"] == [True]
-    hints = " ".join(i.value for i in at.info)
-    assert "Gemini key and CV in the Settings tab" in hints and "Gmail settings" in hints
+    hints = " ".join(c.value for c in at.caption)
+    assert "Add your Gemini key and CV in Settings" in hints and "Gmail settings" in hints
 
 
 def test_run_tab_fetch_score_preview_send(setup, monkeypatch):
@@ -113,16 +113,16 @@ def test_run_tab_fetch_score_preview_send(setup, monkeypatch):
     at = AppTest.from_file(APP, default_timeout=30).run()
 
     at = click(at, "Fetch jobs")
-    assert "2 new job(s) from 1 source(s)." in at.success[0].value
+    assert any("2 new job(s) from 1 source(s)." in s.value for s in at.success)
 
     at = click(at, "Score jobs")
-    assert "Scored 1 job(s)." in at.success[0].value
+    assert any("Scored 1 job(s)." in s.value for s in at.success)
     table = open_page(at, "jobs").dataframe[0].value.set_index("Title")
     assert table.loc["Senior .NET Developer", "Score"] == 91  # Jobs page shows the new score
     at = open_page(at, "home")
 
     at = click(at, "Preview digest")
-    assert any("1 new match" in m.value for m in at.markdown)
+    assert any("1 new match" in e.label for e in at.expander)  # preview shown in the page
     assert FakeSMTP.sent == []  # preview sends nothing
 
     for name, value in {
@@ -133,7 +133,7 @@ def test_run_tab_fetch_score_preview_send(setup, monkeypatch):
         monkeypatch.setenv(name, value)
     at = AppTest.from_file(APP, default_timeout=30).run()
     at = click(at, "Send digest")
-    assert "Sent: JobPilot" in at.success[0].value and len(FakeSMTP.sent) == 1
+    assert any("Sent: JobPilot" in s.value for s in at.success) and len(FakeSMTP.sent) == 1
 
 
 def test_scores_below_min_are_not_in_the_digest(setup):
