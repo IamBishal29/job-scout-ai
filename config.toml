@@ -41,3 +41,8 @@ cv_path = "cv.md"
 [profile]
 # Where you work from. The scorer marks jobs you can't take from here (e.g. "US only") down.
 based_in = "Dhaka, Bangladesh"
+
+[digest]
+# Daily email: the best new matches you haven't been emailed about yet.
+top_n = 10
+min_score = 60
