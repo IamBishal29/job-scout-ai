@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M6 Settings UI (last issue in review)
-- Issue: #45 Run buttons (PR open)
-- Branch: feat/45-run-buttons
-- Next step: Syed merges #45 PR (M6 complete, whole app usable from the browser); then plan new issues
+- Milestone: M6 Settings UI done; docs
+- Issue: #50 README rewrite (PR open)
+- Branch: docs/readme-rewrite
+- Next step: Syed merges README PR; backlog empty -> plan next features with Syed
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -31,7 +31,8 @@
 - #42 Settings tab: env_store (.env writes, atomic, no newline injection), masked Gemini key + Test key, localhost binding, Settings reachable on empty DB (ADR 0004) - merged
 - #43 Gmail section: validate (email format, 16-letter app password), normalize, blank=keep, Send test email via digest code path; .env loaded on Settings display (restart bug) - merged
 - #44 cv_import.py (pypdf, TXT/MD encodings, 5 MB cap, scanned/encrypted detection), Settings 'Your CV' with editable preview + atomic save - merged
-- #45 actions.py service layer (CLI + UI share it), Run tab: fetch / score (progress bar) / preview / send digest, disabled-with-hint buttons; README quick start
+- #45 actions.py service layer (CLI + UI share it), Run tab: fetch / score (progress bar) / preview / send digest, disabled-with-hint buttons; README quick start - merged (M6 complete)
+- #50 README rewritten for non-developers: features, install, browser setup, daily use, scheduler, config, alerts, CLI, privacy, troubleshooting
 
 ## Decisions waiting for Syed
 - #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
@@ -71,3 +72,4 @@
 - 2026-11-11: #43 implemented, PR opened
 - 2026-11-11: #44 implemented, PR opened
 - 2026-11-11: #45 implemented, PR opened; git now uses gh credentials only (local .git/config reset line)
+- 2026-11-11: README rewrite (#50), PR opened
