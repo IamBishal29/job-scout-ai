@@ -1,27 +1,18 @@
-import json
 from datetime import UTC, datetime
-from pathlib import Path
 
 import httpx
 import pytest
+from conftest import load_fixture, mock_client
 
 from jobpilot.sources import remotive
 from jobpilot.sources.http import USER_AGENT, html_to_text, make_client
 
-FIXTURE = json.loads((Path(__file__).parent / "fixtures" / "remotive.json").read_text("utf-8"))
-
-
-def client_returning(status: int, payload: dict, seen: list[httpx.Request]) -> httpx.Client:
-    def handler(request: httpx.Request) -> httpx.Response:
-        seen.append(request)
-        return httpx.Response(status, json=payload)
-
-    return httpx.Client(transport=httpx.MockTransport(handler), headers=make_client().headers)
+FIXTURE = load_fixture("remotive.json")
 
 
 def test_fetch_maps_jobs_and_skips_malformed():
     seen: list[httpx.Request] = []
-    with client_returning(200, FIXTURE, seen) as client:
+    with mock_client(200, FIXTURE, seen) as client:
         jobs = remotive.fetch(client)
 
     assert len(seen) == 1  # one request per run (Remotive asks for few calls)
@@ -40,7 +31,7 @@ def test_fetch_maps_jobs_and_skips_malformed():
 
 
 def test_fetch_raises_on_http_error():
-    with client_returning(500, {}, []) as client, pytest.raises(httpx.HTTPStatusError):
+    with mock_client(500, {}, []) as client, pytest.raises(httpx.HTTPStatusError):
         remotive.fetch(client)
 
 
@@ -53,3 +44,5 @@ def test_make_client_is_polite():
 def test_html_to_text_handles_empty_and_entities():
     assert html_to_text("") == ""
     assert html_to_text("<p>a &lt; b</p><p>c</p>") == "a < b\nc"
+    # escaped HTML (Arbeitnow, some Remote OK), even mixed with real tags
+    assert html_to_text("&lt;p&gt;escaped &amp;amp; ok&lt;/p&gt;<br>") == "escaped & ok"
