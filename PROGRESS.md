@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M2 Dashboard & Tracker (M1 done)
-- Issue: #9 Job detail view (PR open)
-- Branch: feat/9-job-detail-view
-- Next step: Syed reviews/merges #9 PR, then /next-task (#10 Application tracker)
+- Issue: #10 Application tracker (PR open)
+- Branch: feat/10-application-tracker
+- Next step: Syed reviews/merges #10 PR (M2 complete), then /next-task (#11 LLM wrapper, M3 - needs free Gemini API key in .env)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -17,7 +17,8 @@
 - #6 pipeline + `python -m jobpilot fetch`: dedupe_key UNIQUE index, exclude_locations; live: 586 fetched, 29 matched, 27 stored, rerun 0 new - merged
 - #7 GreenhouseSource/LeverSource + [boards] in config.toml + build_sources(); live: greenhouse 715 fetched, 87 new - merged (M1 complete)
 - #8 Streamlit dashboard: app.py + views.py (filter_jobs/to_rows), AppTest smoke tests, telemetry off - merged
-- #9 detail panel: selectable table, selected job id in st.session_state, md_escape for descriptions
+- #9 detail panel: selectable table, selected job id in st.session_state, md_escape for descriptions - merged
+- #10 tracker: applications table, PRAGMA user_version migrations, status state machine, Tracker tab (ADR 0002)
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
@@ -39,3 +40,4 @@
 - 2026-11-11: #7 implemented, PR opened (M1 complete once merged)
 - 2026-11-11: #8 implemented, PR opened
 - 2026-11-11: #9 implemented, PR opened; stopped adding Co-Authored-By to commits (Syed's request)
+- 2026-11-11: #10 implemented, PR opened; real DB migrated v0 -> v2, 114 jobs kept
