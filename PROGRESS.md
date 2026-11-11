@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M6 Settings UI (M1-M5 done)
-- Issue: #44 CV upload (PR open)
-- Branch: feat/44-cv-upload
-- Next step: Syed merges #44 PR; then /next-task (#45 Run buttons)
+- Milestone: M6 Settings UI (last issue in review)
+- Issue: #45 Run buttons (PR open)
+- Branch: feat/45-run-buttons
+- Next step: Syed merges #45 PR (M6 complete, whole app usable from the browser); then plan new issues
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -30,7 +30,8 @@
 - #19 Bdjobs: robots.txt disallows unlisted bots (2nd `User-agent: *` group = Disallow: /) -> won't-do, ADR 0003 - merged
 - #42 Settings tab: env_store (.env writes, atomic, no newline injection), masked Gemini key + Test key, localhost binding, Settings reachable on empty DB (ADR 0004) - merged
 - #43 Gmail section: validate (email format, 16-letter app password), normalize, blank=keep, Send test email via digest code path; .env loaded on Settings display (restart bug) - merged
-- #44 cv_import.py (pypdf, TXT/MD encodings, 5 MB cap, scanned/encrypted detection), Settings 'Your CV' with editable preview + atomic save
+- #44 cv_import.py (pypdf, TXT/MD encodings, 5 MB cap, scanned/encrypted detection), Settings 'Your CV' with editable preview + atomic save - merged
+- #45 actions.py service layer (CLI + UI share it), Run tab: fetch / score (progress bar) / preview / send digest, disabled-with-hint buttons; README quick start
 
 ## Decisions waiting for Syed
 - #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
@@ -69,3 +70,4 @@
 - 2026-11-11: M6 Settings UI planned (#42-#45); #42 implemented, PR opened
 - 2026-11-11: #43 implemented, PR opened
 - 2026-11-11: #44 implemented, PR opened
+- 2026-11-11: #45 implemented, PR opened; git now uses gh credentials only (local .git/config reset line)
