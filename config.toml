@@ -46,3 +46,10 @@ based_in = "Dhaka, Bangladesh"
 # Daily email: the best new matches you haven't been emailed about yet.
 top_n = 10
 min_score = 60
+
+[alerts]
+# LinkedIn/Indeed job-alert emails, read from Gmail over IMAP (read-only; nothing is marked read).
+# Create a Gmail filter that applies this label to alert emails, enable IMAP in Gmail settings,
+# then add "alerts" to [sources].enabled. Uses SMTP_USER + SMTP_APP_PASSWORD from .env.
+imap_folder = "JobAlerts"
+days = 7

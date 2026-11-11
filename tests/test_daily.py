@@ -46,7 +46,7 @@ def test_daily_keeps_going_after_a_failed_step(steps, capsys, bad):
 
 def test_scripts_call_the_daily_command():
     daily = (SCRIPTS / "daily.ps1").read_text(encoding="utf-8")
-    assert '"daily"' in daily and ".venv\Scripts\python.exe" in daily
+    assert '"daily"' in daily and r".venv\Scripts\python.exe" in daily
     assert "exit $LASTEXITCODE" in daily
     register = (SCRIPTS / "register-task.ps1").read_text(encoding="utf-8")
     assert "daily.ps1" in register and "Register-ScheduledTask" in register
