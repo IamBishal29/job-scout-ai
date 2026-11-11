@@ -1,9 +1,9 @@
 """UI-independent view logic: filtering and table rows. No Streamlit imports here."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
-from jobpilot.models import Job
+from jobpilot.models import Job, Status
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,11 +27,13 @@ def filter_jobs(jobs: Iterable[Job], f: JobFilter) -> list[Job]:
     ]
 
 
-def to_rows(jobs: Iterable[Job]) -> list[dict]:
+def to_rows(jobs: Iterable[Job], statuses: Mapping[str, Status] | None = None) -> list[dict]:
     """Flatten jobs into table rows, in the column order the UI shows."""
+    statuses = statuses or {}
     return [
         {
             "Posted": job.posted_at.date() if job.posted_at else None,
+            "Status": statuses.get(job.id, Status.NEW).value,
             "Title": job.title,
             "Company": job.company,
             "Location": job.location,
