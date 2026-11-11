@@ -2,13 +2,14 @@
 
 ## Current
 - Milestone: M1 Fetch & Store
-- Issue: none in progress
-- Branch: none
-- Next step: merge the two kickoff PRs (docs, then scaffold), then run /next-task (#1 Job model + SQLite schema)
+- Issue: #1 Job model + SQLite schema (PR open)
+- Branch: feat/1-job-model-sqlite
+- Next step: Syed reviews/merges #1 PR, then /next-task (#2 Config loading)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
 - Kickoff: PRD, architecture, ADR 0001, scaffold + CI, backlog (5 milestones, issues #1-#19)
+- #1 Job dataclass + SQLite db layer (models.py, db.py, 6 tests)
 
 ## Decisions waiting for Syed
 - Get a free Gemini API key (aistudio.google.com) before M3 — no card needed
@@ -17,3 +18,4 @@
 ## Log
 - 2026-11-11: agent kit added
 - 2026-11-11: kickoff done; split into two PRs to keep review small
+- 2026-11-11: #1 implemented, PR opened
