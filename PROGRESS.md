@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M7 UI redesign (M1-M6 done)
-- Issue: #54 Job cards (PR open)
-- Branch: feat/54-job-cards
-- Next step: Syed merges #54 PR; then /next-task (#55 Tracker board + Settings polish)
+- Milestone: M7 UI redesign (last issue in review)
+- Issue: #55 Tracker board + Settings polish (PR open)
+- Branch: feat/55-tracker-board
+- Next step: Syed merges #55 PR (M7 complete); backlog empty -> plan next features with Syed
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -35,7 +35,8 @@
 - #50 README rewritten for non-developers: features, install, browser setup, daily use, scheduler, config, alerts, CLI, privacy, troubleshooting - merged
 - #52 st.navigation (Home/Jobs/Tracker/Settings), app_pages/ thin pages, ui_common (config, open_db, flash), ui_jobs/ui_tracker moved unchanged, indigo light theme, ADR 0005; fixed double-spaced test_views.py - merged
 - #53 Home: greeting, setup checklist, 4 stat cards (summarize), action cards (fetch/score/digest), top 5 matches, empty states - merged
-- #54 Job cards: score_badge colours, Sort by (best/newest), 20/page paginate, Details dialog (on_dismiss), table helpers removed
+- #54 Job cards: score_badge colours, Sort by (best/newest), 20/page paginate, Details dialog (on_dismiss), table helpers removed - merged
+- #55 Tracker board (board_columns, ago, rejected collapsed), shared status_icon + notify icons, boxed Settings sections
 
 ## Decisions waiting for Syed
 - #18 parser built from SYNTHETIC alert samples: verify on one real LinkedIn + Indeed alert before relying on it
@@ -79,3 +80,4 @@
 - 2026-11-11: M7 UI redesign planned (#52-#55); #52 implemented, PR opened
 - 2026-11-11: #53 implemented, PR opened
 - 2026-11-11: #54 implemented, PR opened
+- 2026-11-11: #55 implemented, PR opened
