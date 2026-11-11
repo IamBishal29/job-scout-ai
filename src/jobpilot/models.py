@@ -4,6 +4,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from enum import StrEnum
 
 _NON_ALNUM = re.compile(r"[^a-z0-9#+]+")  # keep '#' and '+' so "C#" != "C" and "C++" != "C"
 
@@ -41,3 +42,36 @@ class Job:
         company = normalize(self.company)
         basis = f"{company}|{normalize(self.title)}" if company else self.url.strip().lower()
         return hashlib.sha1(basis.encode("utf-8")).hexdigest()
+
+
+class Status(StrEnum):
+    """Where I am with a job. Stored as text in the applications table."""
+
+    NEW = "new"
+    SAVED = "saved"
+    APPLIED = "applied"
+    INTERVIEW = "interview"
+    OFFER = "offer"
+    REJECTED = "rejected"
+
+
+# Light state machine: move forward, get rejected, or step back one stage to fix a mistake.
+ALLOWED: dict[Status, frozenset[Status]] = {
+    Status.NEW: frozenset({Status.SAVED, Status.APPLIED}),
+    Status.SAVED: frozenset({Status.NEW, Status.APPLIED, Status.REJECTED}),
+    Status.APPLIED: frozenset({Status.SAVED, Status.INTERVIEW, Status.REJECTED}),
+    Status.INTERVIEW: frozenset({Status.APPLIED, Status.OFFER, Status.REJECTED}),
+    Status.OFFER: frozenset({Status.INTERVIEW, Status.REJECTED}),
+    Status.REJECTED: frozenset({Status.SAVED, Status.APPLIED, Status.INTERVIEW}),
+}
+
+
+@dataclass(frozen=True, slots=True)
+class Application:
+    """My tracking data for one job. A job without a row is implicitly NEW."""
+
+    job_id: str
+    status: Status = Status.NEW
+    notes: str = ""
+    applied_at: datetime | None = None
+    updated_at: datetime = field(default_factory=utc_now)
