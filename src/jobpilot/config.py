@@ -2,13 +2,16 @@
 
 import os
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 DEFAULT_CONFIG_PATH = Path("config.toml")
-KNOWN_SOURCES = frozenset({"remotive", "remoteok", "arbeitnow", "weworkremotely"})
+KNOWN_SOURCES = frozenset(
+    {"remotive", "remoteok", "arbeitnow", "weworkremotely", "greenhouse", "lever"}
+)
+BOARD_SOURCES = ("greenhouse", "lever")  # sources configured with a list of companies
 
 
 class ConfigError(Exception):
@@ -27,6 +30,7 @@ class Config:
     search: SearchConfig
     sources: tuple[str, ...]
     db_path: Path
+    boards: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
 
 def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
@@ -56,6 +60,10 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
             ),
         ),
         sources=tuple(sources),
+        boards={
+            name: tuple(_string_list(data.get("boards", {}), name, "boards", optional=True))
+            for name in BOARD_SOURCES
+        },
         db_path=Path(data.get("database", {}).get("path", "data/jobpilot.db")),
     )
 

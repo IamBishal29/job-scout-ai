@@ -19,7 +19,13 @@ exclude_locations = [
 ]
 
 [sources]
-enabled = ["remotive", "remoteok", "arbeitnow", "weworkremotely"]
+enabled = ["remotive", "remoteok", "arbeitnow", "weworkremotely", "greenhouse", "lever"]
+
+[boards]
+# Company careers boards. The name is in the careers URL:
+#   job-boards.greenhouse.io/<name>   or   jobs.lever.co/<name>
+greenhouse = ["gitlab", "canonical", "grafanalabs"]
+lever = ["toptal"]
 
 [database]
 path = "data/jobpilot.db"
