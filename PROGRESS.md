@@ -1,10 +1,10 @@
 # Progress
 
 ## Current
-- Milestone: M2 Dashboard & Tracker (M1 done)
-- Issue: #10 Application tracker (PR open)
-- Branch: feat/10-application-tracker
-- Next step: Syed reviews/merges #10 PR (M2 complete), then /next-task (#11 LLM wrapper, M3 - needs free Gemini API key in .env)
+- Milestone: M3 AI Matching (M1, M2 done)
+- Issue: #11 LLM wrapper (PR open)
+- Branch: feat/11-llm-wrapper
+- Next step: Syed merges #11 PR, adds GEMINI_API_KEY to .env, runs `python -m jobpilot llm-check`; then /next-task (#12 CV match scorer - needs cv.md)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -18,14 +18,16 @@
 - #7 GreenhouseSource/LeverSource + [boards] in config.toml + build_sources(); live: greenhouse 715 fetched, 87 new - merged (M1 complete)
 - #8 Streamlit dashboard: app.py + views.py (filter_jobs/to_rows), AppTest smoke tests, telemetry off - merged
 - #9 detail panel: selectable table, selected job id in st.session_state, md_escape for descriptions - merged
-- #10 tracker: applications table, PRAGMA user_version migrations, status state machine, Tracker tab (ADR 0002)
+- #10 tracker: applications table, PRAGMA user_version migrations, status state machine, Tracker tab (ADR 0002) - merged
+- #11 llm.py: LlmClient Protocol, GeminiClient (httpx REST, key in header, 429/5xx backoff), FakeLlmClient, llm-check CLI
 
 ## Decisions waiting for Syed
 - Location filter lets country-restricted remotes through (e.g. 'Remote, Poland' on Greenhouse); decide: tighten config, add BD/APAC rule, or rely on M3 scoring
 - Company board list is a default (gitlab, canonical, grafanalabs, toptal); edit [boards] in config.toml
 - Keyword filter is coarse (e.g. 'Team Lead Account Executive' matched); tune config.toml or rely on M3 scoring
 - Remotive free API returns only ~13 jobs (24h delayed); volume now comes from RemoteOK/Arbeitnow
-- Get a free Gemini API key (aistudio.google.com) before M3 — no card needed
+- Get a free Gemini API key (aistudio.google.com, no card) and add GEMINI_API_KEY to .env, then run `python -m jobpilot llm-check`
+- Put your CV as plain text/markdown in cv.md (git-ignored) before #12
 - Gmail app password needed before M4 (requires 2-step verification)
 
 ## Log
@@ -41,3 +43,4 @@
 - 2026-11-11: #8 implemented, PR opened
 - 2026-11-11: #9 implemented, PR opened; stopped adding Co-Authored-By to commits (Syed's request)
 - 2026-11-11: #10 implemented, PR opened; real DB migrated v0 -> v2, 114 jobs kept
+- 2026-11-11: #11 implemented, PR opened; live Gemini call pending Syed's key
