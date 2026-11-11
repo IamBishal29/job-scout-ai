@@ -1,12 +1,12 @@
-"""Command line: `python -m jobpilot fetch`."""
+"""Command line: `python -m jobpilot fetch` and `python -m jobpilot llm-check`."""
 
 import argparse
 import logging
 import sys
 from collections.abc import Sequence
 
-from jobpilot import __version__
-from jobpilot.config import DEFAULT_CONFIG_PATH, ConfigError, load_config
+from jobpilot import __version__, llm
+from jobpilot.config import DEFAULT_CONFIG_PATH, Config, ConfigError, load_config
 from jobpilot.db import connect, init_db
 from jobpilot.pipeline import SourceResult, run_fetch
 from jobpilot.sources.http import make_client
@@ -18,9 +18,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH, help="path to config.toml")
     commands = parser.add_subparsers(dest="command")
     commands.add_parser("fetch", help="fetch jobs from all enabled sources into the database")
+    commands.add_parser("llm-check", help="send one tiny prompt to check your Gemini key/model")
     args = parser.parse_args(argv)
 
-    if args.command != "fetch":
+    if args.command is None:
         print(f"JobPilot {__version__}")
         parser.print_help()
         return 0
@@ -32,6 +33,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"Config error: {e}", file=sys.stderr)
         return 2
 
+    if args.command == "llm-check":
+        return llm_check(config)
+
     conn = connect(config.db_path)
     try:
         init_db(conn)
@@ -41,6 +45,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         conn.close()
     print(format_results(results))
     return 1 if all(r.error for r in results) else 0
+
+
+def llm_check(config: Config) -> int:
+    """Prove the API key and model work, without ever printing the key."""
+    try:
+        reply = llm.make_llm_client(config).generate("Reply with exactly: JobPilot OK")
+    except (ConfigError, llm.LlmError) as e:
+        print(f"LLM check failed: {e}", file=sys.stderr)
+        return 1
+    print(f"Model {config.llm_model} replied: {reply}")
+    return 0
 
 
 def format_results(results: list[SourceResult]) -> str:

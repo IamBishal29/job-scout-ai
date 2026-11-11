@@ -4,7 +4,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from jobpilot.config import load_config
+from jobpilot.config import ConfigError, load_config
 from jobpilot.llm import FakeLlmClient, GeminiClient, LlmClient, LlmError, make_llm_client
 
 KEY = "test-key-123"
@@ -100,3 +100,19 @@ def test_make_llm_client_uses_config_model_and_env_key(monkeypatch):
     client = make_llm_client(cfg)
     assert isinstance(client, GeminiClient)
     assert client.model == cfg.llm_model == "gemini-flash-latest"
+
+
+def test_llm_check_cli(monkeypatch, capsys):
+    from jobpilot import __main__ as cli
+    from jobpilot import llm
+
+    monkeypatch.setattr(llm, "make_llm_client", lambda cfg: FakeLlmClient(["JobPilot OK"]))
+    assert cli.main(["llm-check"]) == 0
+    assert "replied: JobPilot OK" in capsys.readouterr().out
+
+    def no_key(cfg):
+        raise ConfigError("Missing secret GEMINI_API_KEY")
+
+    monkeypatch.setattr(llm, "make_llm_client", no_key)
+    assert cli.main(["llm-check"]) == 1
+    assert "Missing secret GEMINI_API_KEY" in capsys.readouterr().err
