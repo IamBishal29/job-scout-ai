@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss">
+  <channel>
+    <title>We Work Remotely: Back-End Programming Jobs</title>
+    <item>
+      <media:content url="https://example.com/logo.gif" type="image/png"/>
+      <title>Vertican: Senior Applied AI Engineer, Document Intelligence</title>
+      <region>Anywhere in the World</region>
+      <type>Full-Time</type>
+      <description>&lt;p&gt;&lt;strong&gt;Headquarters:&lt;/strong&gt; New Jersey&lt;/p&gt;&lt;p&gt;LLM pipelines &amp;amp; Python&lt;/p&gt;</description>
+      <pubDate>Thu, 05 Nov 2026 17:12:27 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/vertican-senior-applied-ai-engineer</guid>
+      <link>https://weworkremotely.com/remote-jobs/vertican-senior-applied-ai-engineer</link>
+    </item>
+    <item>
+      <title>Untitled Role Without Company</title>
+      <region></region>
+      <pubDate>Fri, 06 Nov 2026 09:00:00 +0000</pubDate>
+      <link>https://weworkremotely.com/remote-jobs/untitled-role/</link>
+    </item>
+    <item>
+      <title>Broken: item without any link</title>
+    </item>
+  </channel>
+</rss>
