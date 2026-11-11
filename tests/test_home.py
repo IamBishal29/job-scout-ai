@@ -62,7 +62,7 @@ def test_new_user_sees_checklist_and_first_step(home):
     at = AppTest.from_file(APP, default_timeout=30).run()
     assert not at.exception
     text = " ".join(m.value for m in at.markdown)
-    assert "Finish setting up" in text and "radio_button_unchecked" in text
+    assert "Finish setting up" in text and ":orange[:material/error:]" in text
     assert [m.value for m in at.metric] == ["0", "0", "0", "0"]
     assert any("Click **Fetch jobs** above" in i.value for i in at.info)
 

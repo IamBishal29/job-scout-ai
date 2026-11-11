@@ -196,4 +196,4 @@ def test_save_status_from_dialog_shows_badge_and_tracker(tmp_path, monkeypatch):
     assert any(m.value == "Applied" or "Applied" in m.value for m in at.markdown)  # status badge
 
     at = open_page(at, "tracker")
-    assert "Applied (1)" in [h.value for h in at.subheader]
+    assert any(m.value == "**Applied** · 1" for m in at.markdown)  # board column header
