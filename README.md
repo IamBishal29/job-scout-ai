@@ -10,7 +10,7 @@ py install 3.12            # once, if Python 3.12 is missing
 py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-copy .env.example .env     # then fill in your keys
+copy .env.example .env     # then fill in your keys (or use the dashboard's Settings tab)
 ```
 
 ## Run
