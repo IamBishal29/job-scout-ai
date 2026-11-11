@@ -2,9 +2,9 @@
 
 ## Current
 - Milestone: M1 Fetch & Store
-- Issue: #4 RemoteOK + Arbeitnow fetchers (PR open)
-- Branch: feat/4-remoteok-arbeitnow
-- Next step: Syed reviews/merges #4 PR, then /next-task (#5 WeWorkRemotely RSS fetcher)
+- Issue: #5 WeWorkRemotely RSS fetcher (PR open)
+- Branch: feat/5-wwr-rss
+- Next step: Syed reviews/merges #5 PR, then /next-task (#6 Pipeline + fetch CLI)
 
 ## Done
 - Agent kit added (CLAUDE.md, skills, settings)
@@ -12,7 +12,8 @@
 - #1 Job dataclass + SQLite db layer (models.py, db.py, 6 tests) - merged
 - #2 config.toml + load_config() + get_secret() via python-dotenv - merged
 - #3 Remotive fetcher + shared httpx client (sources/http.py, sources/remotive.py) - merged
-- #4 JobSource Protocol + RemoteOK (~99 jobs) + Arbeitnow (300 jobs, mostly German on-site)
+- #4 JobSource Protocol + RemoteOK (~99 jobs) + Arbeitnow (300 jobs, mostly German on-site) - merged
+- #5 WWR RSS fetcher: 4 category feeds, ~174 unique jobs (106 worldwide, 50 USA-only)
 
 ## Decisions waiting for Syed
 - Remotive free API returns only ~13 jobs (24h delayed); volume now comes from RemoteOK/Arbeitnow
@@ -26,3 +27,4 @@
 - 2026-11-11: #2 implemented, PR opened
 - 2026-11-11: #3 implemented, PR opened
 - 2026-11-11: #4 implemented, PR opened
+- 2026-11-11: #5 implemented, PR opened
