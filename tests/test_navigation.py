@@ -26,16 +26,16 @@ def fresh_app(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize(
     ("page", "title"),
-    [("home", "Home"), ("jobs", "Jobs"), ("tracker", "Tracker"), ("settings", "Settings")],
+    [("home", "Good"), ("jobs", "Jobs"), ("tracker", "Tracker"), ("settings", "Settings")],
 )
 def test_every_page_opens_for_a_new_user(fresh_app, page, title):
     at = open_page(fresh_app, page)
     assert not at.exception
-    assert at.title[0].value == title
+    assert at.title[0].value.startswith(title)
 
 
 def test_home_is_the_default_page(fresh_app):
-    assert fresh_app.title[0].value == "Home"
+    assert fresh_app.title[0].value.startswith("Good")  # Home greets you
 
 
 def test_theme_uses_light_base_and_indigo_accent():
