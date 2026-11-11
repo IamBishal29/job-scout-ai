@@ -19,6 +19,7 @@ class ConfigError(Exception):
 class SearchConfig:
     role_keywords: tuple[str, ...]
     locations: tuple[str, ...]
+    exclude_locations: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +50,10 @@ def load_config(path: Path | str = DEFAULT_CONFIG_PATH) -> Config:
         search=SearchConfig(
             role_keywords=tuple(k.lower() for k in _string_list(search, "role_keywords", "search")),
             locations=tuple(k.lower() for k in _string_list(search, "locations", "search")),
+            exclude_locations=tuple(
+                k.lower()
+                for k in _string_list(search, "exclude_locations", "search", optional=True)
+            ),
         ),
         sources=tuple(sources),
         db_path=Path(data.get("database", {}).get("path", "data/jobpilot.db")),
@@ -67,8 +72,12 @@ def get_secret(name: str, env_file: Path | str = ".env") -> str:
     return value
 
 
-def _string_list(table: dict, key: str, section: str) -> list[str]:
+def _string_list(table: dict, key: str, section: str, optional: bool = False) -> list[str]:
     value = table.get(key)
-    if not isinstance(value, list) or not value or not all(isinstance(v, str) for v in value):
+    if optional and value is None:
+        return []
+    if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+        raise ConfigError(f"[{section}].{key} must be a list of strings")
+    if not value and not optional:
         raise ConfigError(f"[{section}].{key} must be a non-empty list of strings")
     return value
